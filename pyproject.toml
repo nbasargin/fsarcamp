@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=42"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fsarcamp"
+version = "0.0.1"
+description = "Data loaders for F-SAR campaigns"
+authors = [
+    {name = "Nikita Basargin", email = "nikita.basargin@dlr.de"},
+]
+readme = "README.md"
+requires-python = ">=3.8"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
