@@ -2,6 +2,8 @@
 """
 Partial copy of lib_io.py from https://gitlab.dlr.de/hr-rko-ir-pol-insar/common_code
 More recent version can be found in https://gitlab.dlr.de/hr-stetools/stetools/-/blob/master/STEtools/ste_io.py
+A free copy of ste_io.py is also available from the DLR HR "F-SAR Data Formats" website:
+https://www.dlr.de/hr/desktopdefault.aspx/tabid-2326/3776_read-48006
 """
 
 ################# PART FOR RAT FILES from STEEtools #################################
