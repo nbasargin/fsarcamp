@@ -43,8 +43,9 @@ def _pt_range(first_id, last_id):
     """ Range of point IDs from first_id to last_id (including the last value) """
     return [f"P{i}" for i in range(first_id, last_id + 1)]
 
-def _get_soil_moisture_crea_apr_bs(sm_df, time_period_id):
-    """ CREA bare soil field in April """
+def _crea_bs_qu_interpolation_groups(sm_df, time_period_id):
+    """ CREA_BS_QU region: bare soil field in April, quinoa in June """
+    # June: bare soil
     if time_period_id == ht22.APR_28_AM:
         return [_filter_soil_moisture_subset(sm_df, "CREA_BARESOIL", "2022-04-28T08:45:00", "2022-04-28T11:09:00")]
     if time_period_id == ht22.APR_28_PM:
@@ -59,10 +60,19 @@ def _get_soil_moisture_crea_apr_bs(sm_df, time_period_id):
     if time_period_id == ht22.APR_29_AM:
         return [_filter_soil_moisture_subset(sm_df, "CREA_BARESOIL", "2022-04-29 08:43:00", "2022-04-29 10:28:00")]
     if time_period_id == ht22.APR_29_PM:
-        return [_filter_soil_moisture_subset(sm_df, "CREA_BARESOIL", "2022-04-29 13:30:00", "2022-04-29 15:01:00")]
+        return [_filter_soil_moisture_subset(sm_df, "CREA_BARESOIL", "2022-04-29 13:30:00", "2022-04-29 15:01:00")]    
+    # April: quinoa
+    if time_period_id == ht22.JUN_15_AM:
+        return [_filter_soil_moisture_subset(sm_df, "CREA_QUINOA", "2022-06-15 08:39:00", "2022-06-15 10:33:00")]
+    if time_period_id == ht22.JUN_15_PM:
+        return [_filter_soil_moisture_subset(sm_df, "CREA_QUINOA", "2022-06-15 14:02:00", "2022-06-15 15:16:00")]
+    if time_period_id == ht22.JUN_16_AM:
+        return [_filter_soil_moisture_subset(sm_df, "CREA_QUINOA", "2022-06-16 08:39:00", "2022-06-16 09:49:00")]
+    if time_period_id == ht22.JUN_16_PM:
+        return [_filter_soil_moisture_subset(sm_df, "CREA_QUINOA", "2022-06-16 13:48:00", "2022-06-16 14:42:00")]
     return []
 
-def _get_soil_moisture_crea_apr_dw(sm_df, time_period_id):
+def _crea_dw_interpolation_groups(sm_df, time_period_id):
     """ CREA durum wheat field in April """
     if time_period_id == ht22.APR_28_AM:
         # CREA_DW, east part, 2 stripes
@@ -92,7 +102,7 @@ def _get_soil_moisture_crea_apr_dw(sm_df, time_period_id):
         return [pd.concat([crea_dw_29pm_1, crea_dw_29pm_2, crea_dw_29pm_3], ignore_index=True)]
     return []
 
-def _get_soil_moisture_caione_apr_dw(sm_df, time_period_id):
+def _caione_dw_interpolation_groups(sm_df, time_period_id):
     """ CAIONE durum wheat fields in April """
     if time_period_id == ht22.APR_28_AM:
         # CAIONE_DW, field 1, north part, 1 stripe
@@ -148,7 +158,7 @@ def _get_soil_moisture_caione_apr_dw(sm_df, time_period_id):
         return [apr29pm_f1, apr29pm_f2]
     return []
 
-def _get_soil_moisture_crea_jun_sf(sm_df, time_period_id):
+def _crea_sf_interpolation_groups(sm_df, time_period_id):
     """ CREA sunflower field in June """
     if time_period_id == ht22.JUN_15_AM:
         return [_filter_soil_moisture_subset(sm_df, "CREA_SUNFLOWER", "2022-06-15 08:43:00", "2022-06-15 09:11:00")]
@@ -160,19 +170,7 @@ def _get_soil_moisture_crea_jun_sf(sm_df, time_period_id):
         return [_filter_soil_moisture_subset(sm_df, "CREA_SUNFLOWER", "2022-06-16 13:56:00", "2022-06-16 14:13:00")]
     return []
 
-def _get_soil_moisture_crea_jun_qu(sm_df, time_period_id):
-    """ CREA quinoa field in June """
-    if time_period_id == ht22.JUN_15_AM:
-        return [_filter_soil_moisture_subset(sm_df, "CREA_QUINOA", "2022-06-15 08:39:00", "2022-06-15 10:33:00")]
-    if time_period_id == ht22.JUN_15_PM:
-        return [_filter_soil_moisture_subset(sm_df, "CREA_QUINOA", "2022-06-15 14:02:00", "2022-06-15 15:16:00")]
-    if time_period_id == ht22.JUN_16_AM:
-        return [_filter_soil_moisture_subset(sm_df, "CREA_QUINOA", "2022-06-16 08:39:00", "2022-06-16 09:49:00")]
-    if time_period_id == ht22.JUN_16_PM:
-        return [_filter_soil_moisture_subset(sm_df, "CREA_QUINOA", "2022-06-16 13:48:00", "2022-06-16 14:42:00")]
-    return []
-
-def _get_soil_moisture_crea_jun_ma(sm_df, time_period_id):
+def _crea_ma_interpolation_groups(sm_df, time_period_id):
     """ CREA maize field in June """
     if time_period_id == ht22.JUN_15_AM:
         jun15am_1 = _filter_soil_moisture_subset(sm_df, "CREA_MAIS1", "2022-06-15 09:46:00", "2022-06-15 10:29:00")
@@ -192,7 +190,7 @@ def _get_soil_moisture_crea_jun_ma(sm_df, time_period_id):
         return [pd.concat([jun16pm_1, jun16pm_2], ignore_index=True)]
     return []
 
-def _get_soil_moisture_caione_jun_aa(sm_df, time_period_id):
+def _caione_aa_interpolation_groups(sm_df, time_period_id):
     """ CAIONE alfalfa field in June """
     if time_period_id == ht22.JUN_15_AM:
         jun15am_1 = _filter_soil_moisture_subset(sm_df, "CAIONE_ALFAALFA1", "2022-06-15 09:48:00", "2022-06-15 10:13:00")
@@ -216,7 +214,7 @@ def _get_soil_moisture_caione_jun_aa(sm_df, time_period_id):
         return [pd.concat([jun16pm_1, jun16pm_2, jun16pm_3], ignore_index=True)]
     return []
 
-def _get_soil_moisture_caione_jun_ma(sm_df, time_period_id):
+def _caione_ma_interpolation_groups(sm_df, time_period_id):
     """ CAIONE maize field in June """
     if time_period_id == ht22.JUN_15_AM:
         # west: 3 strips
@@ -267,27 +265,25 @@ def _get_soil_moisture_interpolation_groups(region_name, time_period_id):
     You may use drop_duplicates after concatenating all dataframes to remove duplicates.
     """
     sm_df = get_hterra22_soil_moisture()
-    if region_name == ht22.APR_CREA_BS: return _get_soil_moisture_crea_apr_bs(sm_df, time_period_id)
-    if region_name == ht22.APR_CREA_DW: return _get_soil_moisture_crea_apr_dw(sm_df, time_period_id)
-    if region_name == ht22.JUN_CREA_SF: return _get_soil_moisture_crea_jun_sf(sm_df, time_period_id)
-    if region_name == ht22.JUN_CREA_QU: return _get_soil_moisture_crea_jun_qu(sm_df, time_period_id)
-    if region_name == ht22.JUN_CREA_MA: return _get_soil_moisture_crea_jun_ma(sm_df, time_period_id)
+    if region_name == ht22.CREA_BS_QU: return _crea_bs_qu_interpolation_groups(sm_df, time_period_id)
+    if region_name == ht22.CREA_DW: return _crea_dw_interpolation_groups(sm_df, time_period_id)
+    if region_name == ht22.CREA_SF: return _crea_sf_interpolation_groups(sm_df, time_period_id)
+    if region_name == ht22.CREA_MA: return _crea_ma_interpolation_groups(sm_df, time_period_id)
     if region_name == ht22.CREA:
         return [ # all CREA groups in one list
-            *_get_soil_moisture_crea_apr_bs(sm_df, time_period_id),
-            *_get_soil_moisture_crea_apr_dw(sm_df, time_period_id),
-            *_get_soil_moisture_crea_jun_sf(sm_df, time_period_id),
-            *_get_soil_moisture_crea_jun_qu(sm_df, time_period_id),
-            *_get_soil_moisture_crea_jun_ma(sm_df, time_period_id),
+            *_crea_bs_qu_interpolation_groups(sm_df, time_period_id),
+            *_crea_dw_interpolation_groups(sm_df, time_period_id),
+            *_crea_sf_interpolation_groups(sm_df, time_period_id),
+            *_crea_ma_interpolation_groups(sm_df, time_period_id),
         ]
-    if region_name == ht22.APR_CAIONE_DW: return _get_soil_moisture_caione_apr_dw(sm_df, time_period_id)
-    if region_name == ht22.JUN_CAIONE_AA: return _get_soil_moisture_caione_jun_aa(sm_df, time_period_id)
-    if region_name == ht22.JUN_CAIONE_MA: return _get_soil_moisture_caione_jun_ma(sm_df, time_period_id)
+    if region_name == ht22.CAIONE_DW: return _caione_dw_interpolation_groups(sm_df, time_period_id)
+    if region_name == ht22.CAIONE_AA: return _caione_aa_interpolation_groups(sm_df, time_period_id)
+    if region_name == ht22.CAIONE_MA: return _caione_ma_interpolation_groups(sm_df, time_period_id)
     if region_name == ht22.CAIONE:
         return [ # all CAIONE groups in one list
-            *_get_soil_moisture_caione_apr_dw(sm_df, time_period_id),
-            *_get_soil_moisture_caione_jun_aa(sm_df, time_period_id),
-            *_get_soil_moisture_caione_jun_ma(sm_df, time_period_id),
+            *_caione_dw_interpolation_groups(sm_df, time_period_id),
+            *_caione_aa_interpolation_groups(sm_df, time_period_id),
+            *_caione_ma_interpolation_groups(sm_df, time_period_id),
         ]
     raise ValueError(f"Unsupported region {region_name}")
 

@@ -14,16 +14,15 @@ def get_region_lut_coordinates(band, region_name):
     c_band_regions = {
         # CREA farm
         c.CREA: ((3284, 3885), (1355, 2023)),
-        c.APR_CREA_BS: ((3671, 3885), (1791, 2023)), # same as JUN_CREA_QU
-        c.APR_CREA_DW: ((3284, 3647), (1355, 1641)),
-        c.JUN_CREA_SF: ((3339, 3565), (1769, 1930)),
-        c.JUN_CREA_QU: ((3671, 3885), (1791, 2023)), # same as APR_CREA_BS
-        c.JUN_CREA_MA: ((3338, 3585), (1708, 1895)),
+        c.CREA_BS_QU: ((3671, 3885), (1791, 2023)),
+        c.CREA_DW: ((3284, 3647), (1355, 1641)),
+        c.CREA_SF: ((3339, 3565), (1769, 1930)),
+        c.CREA_MA: ((3338, 3585), (1708, 1895)),
         # CAIONE farn
         c.CAIONE: ((6962, 7654), (2080, 2823)),
-        c.APR_CAIONE_DW: ((7110, 7654), (2080, 2765)),
-        c.JUN_CAIONE_AA: ((6976, 7225), (2547, 2823)),
-        c.JUN_CAIONE_MA: ((6962, 7340), (2149, 2757)),
+        c.CAIONE_DW: ((7110, 7654), (2080, 2765)),
+        c.CAIONE_AA: ((6976, 7225), (2547, 2823)),
+        c.CAIONE_MA: ((6962, 7340), (2149, 2757)),
     }
     (northing_min, northing_max), (easting_min, easting_max) = c_band_regions[region_name]
     if band == "C":
@@ -49,27 +48,25 @@ def get_region_radar_coordinates(band, region_name):
     region_definitions = {
         "L": {
             c.CREA: ((7833, 9289), (1012, 1811)),
-            c.APR_CREA_BS: ((8783, 9289), (1492, 1811)),
-            c.APR_CREA_DW: ((7833, 8706), (1012, 1378)),
-            c.JUN_CREA_SF: ((7984, 8525), (1466, 1703)),
-            c.JUN_CREA_QU: ((8783, 9289), (1492, 1811)),
-            c.JUN_CREA_MA: ((7979, 8570), (1396, 1662)),
+            c.CREA_BS_QU: ((8783, 9289), (1492, 1811)),
+            c.CREA_DW: ((7833, 8706), (1012, 1378)),
+            c.CREA_SF: ((7984, 8525), (1466, 1703)),
+            c.CREA_MA: ((7979, 8570), (1396, 1662)),
             c.CAIONE: ((16661, 18336), (1850, 2820)),
-            c.APR_CAIONE_DW: ((17013, 18336), (1850, 2746)),
-            c.JUN_CAIONE_AA: ((16717, 17316), (2428, 2820)),
-            c.JUN_CAIONE_MA: ((16661, 17589), (1932, 2736)),
+            c.CAIONE_DW: ((17013, 18336), (1850, 2746)),
+            c.CAIONE_AA: ((16717, 17316), (2428, 2820)),
+            c.CAIONE_MA: ((16661, 17589), (1932, 2736)),
         },
         "C": {
             c.CREA: ((15414, 18315), (2021, 3619)),
-            c.APR_CREA_BS: ((17303, 18315), (2980, 3619)),
-            c.APR_CREA_DW: ((15414, 17156), (2021, 2752)),
-            c.JUN_CREA_SF: ((15707, 16788), (2928, 3402)),
-            c.JUN_CREA_QU: ((17303, 18315), (2980, 3619)),
-            c.JUN_CREA_MA: ((15699, 16879), (2790, 3321)),
+            c.CREA_BS_QU: ((17303, 18315), (2980, 3619)),
+            c.CREA_DW: ((15414, 17156), (2021, 2752)),
+            c.CREA_SF: ((15707, 16788), (2928, 3402)),
+            c.CREA_MA: ((15699, 16879), (2790, 3321)),
             c.CAIONE: ((33045, 36386), (3697, 5638)),
-            c.APR_CAIONE_DW: ((33750, 36386), (3697, 5490)),
-            c.JUN_CAIONE_AA: ((33149, 34345), (4853, 5638)),
-            c.JUN_CAIONE_MA: ((33045, 34891), (3860, 5468)),
+            c.CAIONE_DW: ((33750, 36386), (3697, 5490)),
+            c.CAIONE_AA: ((33149, 34345), (4853, 5638)),
+            c.CAIONE_MA: ((33045, 34891), (3860, 5468)),
         },
     }
     (az_min, az_max), (rg_min, rg_max) = region_definitions[band][region_name]
@@ -77,10 +74,10 @@ def get_region_radar_coordinates(band, region_name):
 
 def get_soil_texture_by_region(region_name):
     """ Get soil texture (sand and clay values) for the specified region. """
-    if region_name in [c.CREA, c.APR_CREA_BS, c.APR_CREA_DW, c.JUN_CREA_SF, c.JUN_CREA_QU, c.JUN_CREA_MA]:
+    if region_name in [c.CREA, c.CREA_BS_QU, c.CREA_DW, c.CREA_SF, c.CREA_MA]:
         crea_sand, crea_clay = 26.8, 32.4
         return crea_sand, crea_clay
-    if region_name in [c.CAIONE, c.APR_CAIONE_DW, c.JUN_CAIONE_AA, c.JUN_CAIONE_MA]:
+    if region_name in [c.CAIONE, c.CAIONE_DW, c.CAIONE_AA, c.CAIONE_MA]:
         caione_sand, caione_clay = 24.5, 38.2
         return caione_sand, caione_clay
     raise Exception(f"Unknown region name: {region_name}")
