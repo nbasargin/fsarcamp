@@ -49,6 +49,7 @@ def get_region_radar_coordinates(band, region_name):
         "L": {
             c.CREA: ((7833, 9289), (1012, 1811)),
             c.CREA_BS_QU: ((8783, 9289), (1492, 1811)),
+            "CREA_BS_QU_SMALL_DEBUG": ((8880, 9190), (1558, 1745)), # Debug region around ground measurements + 20 px in azimuth, 15 px in range
             c.CREA_DW: ((7833, 8706), (1012, 1378)),
             c.CREA_SF: ((7984, 8525), (1466, 1703)),
             c.CREA_MA: ((7979, 8570), (1396, 1662)),

@@ -265,6 +265,7 @@ def _get_soil_moisture_interpolation_groups(region_name, time_period_id):
     You may use drop_duplicates after concatenating all dataframes to remove duplicates.
     """
     sm_df = get_hterra22_soil_moisture()
+    if region_name == "CREA_BS_QU_SMALL_DEBUG": return _crea_bs_qu_interpolation_groups(sm_df, time_period_id) # smaller debug region
     if region_name == ht22.CREA_BS_QU: return _crea_bs_qu_interpolation_groups(sm_df, time_period_id)
     if region_name == ht22.CREA_DW: return _crea_dw_interpolation_groups(sm_df, time_period_id)
     if region_name == ht22.CREA_SF: return _crea_sf_interpolation_groups(sm_df, time_period_id)
