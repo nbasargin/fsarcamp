@@ -51,7 +51,3 @@ Most of the code in this repository is open (MIT license).
 
 Some source files have been obtained from other repositories, e.g. `https://gitlab.dlr.de/hr-stetools/stetools` and `https://gitlab.dlr.de/hr-rko-ir-pol-insar/common_code`.
 The origin of third-party code is explicitly stated in the docstrings, refer to the original repository for the license.
-
-Some campaign loaders provide (pre-processed) ground measurement data.
-The origin of the data is noted in the docstrings of the pre-processing scripts.
-The licence for the pre-processed data remains the same as for the original ground measurements.
