@@ -8,10 +8,6 @@ import numpy as np
 import pandas as pd
 import pyproj
 
-from importlib import resources as impresources
-import pandas as pd
-from fsarcamp.cropex14 import moisturedata
-
 class CROPEX14Moisture:
     def __init__(self, data_folder):
         """
@@ -162,14 +158,3 @@ class CROPEX14Moisture:
         all_dfs.append(self._read_soil_moisture_sheet(get_path("2014_08_24.xlsx"), "Meteorological Station", 10, name_meteo))
         all_dfs.append(self._read_soil_moisture_sheet(get_path("2014_08_24.xlsx"), "Big Field", 43, name_big))
         return pd.concat(all_dfs, ignore_index=True)
-
-# DEPRECATED
-def get_cropex14_soil_moisture():
-    """
-    Load ground truth measurements for soil moisture during the CROPEX 14 campaign.
-    Return a pandas dataframe. Soil moisture values range from 0 (0%) to 1 (100%).
-    """
-    inp_file = impresources.files(moisturedata) / "cropex14_soil_moisture_v1.csv"
-    df = pd.read_csv(inp_file)
-    df["date_time"] = pd.to_datetime(df["date_time"])
-    return df
