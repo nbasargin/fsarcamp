@@ -293,9 +293,9 @@ class HTERRA22MoistureV2:
             june_crea_folder = self.data_folder / "June22/soil_moisture_sensors/CREA"
             dfs.append(self._read_moisture_csv(june_crea_folder / filename))
         df = pd.concat(dfs, ignore_index=True)
-        if band is not None:
-            df = self._extend_df_coords(df, band)
         if region is None and time_period is None:
+            if band is not None:
+                df = self._extend_df_coords(df, band)
             return df
         # filter points by the specified region and/or time period
         filter_dict = self._get_region_time_filters()
@@ -312,11 +312,15 @@ class HTERRA22MoistureV2:
             self._filter_subset(df, *reg_time_filter) for reg_time_filter in filters
         ]
         if len(dataframes) == 0:
-            return pd.DataFrame(columns=[
-                "date_time", "point_id", "field", "longitude", "latitude", "soil_moisture",
-                "easting", "northing", "lut_northing", "lut_easting", "azimuth", "range"
+            result = pd.DataFrame(columns=[
+                "date_time", "point_id", "field", "longitude", "latitude",
+                "soil_moisture", "easting", "northing",
             ])
-        return pd.concat(dataframes, ignore_index=True)
+        else:
+            result = pd.concat(dataframes, ignore_index=True)        
+        if band is not None:
+            result = self._extend_df_coords(result, band)
+        return result
 
 class HTERRA22Moisture:
     def __init__(self, data_folder):
