@@ -1,6 +1,6 @@
 # Re-exporting internal functionality
 from .fsar import HTERRA22Campaign
-from .moisture import HTERRA22Moisture, HTERRA22MoistureV2
+from .moisture import HTERRA22Moisture
 from .moisture_interpolated import HTERRA22MoistureInterpolated
 
 from .constants import APR_28_AM, APR_28_PM, APR_29_AM, APR_29_PM, JUN_15_AM, JUN_15_PM, JUN_16_AM, JUN_16_PM

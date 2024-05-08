@@ -13,7 +13,7 @@ class HTERRA22MoistureInterpolated:
         Default location on DLR servers as of May 2024:
             fsarcamp.get_polinsar_folder() / "Ground_truth/HTerra_soil_2022/DataPackage_final"
         """
-        self.moisture = ht22.HTERRA22MoistureV2(data_folder)
+        self.moisture = ht22.HTERRA22Moisture(data_folder)
 
     def _filter_point_subset(self, sm_df, field_stripes=None, point_ids=None):
         if field_stripes:
