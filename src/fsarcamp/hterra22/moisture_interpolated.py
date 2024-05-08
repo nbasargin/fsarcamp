@@ -22,16 +22,28 @@ class HTERRA22MoistureInterpolated:
             sm_df = sm_df[sm_df["point_id"].isin(point_ids)]
         return sm_df
 
-    def _get_interpolation_groups(self, band, region, time_period):
+    def _form_interpolation_groups(self, band, region, time_period):
         """
         Return a list of pandas dataframes, each dataframe contains several points.
         Points within each dataframe are spatially close and soil moisture can be interpolated between them.
         Points in different dataframes should not be interpolated together but belong to the same region.
         """
-        # explicity allow or disallow compound regions (CAIONE, CREA)
-
-        # Range of point IDs from first_id to last_id (including)
-        id_range = lambda first_id, last_id: [f"P{i}" for i in range(first_id, last_id + 1)]
+        # large regions made of smaller ones -> process small ones individually
+        if region == ht22.CREA:
+            return [
+                *self._form_interpolation_groups(band, ht22.CREA_BS_QU, time_period),
+                *self._form_interpolation_groups(band, ht22.CREA_DW, time_period),
+                *self._form_interpolation_groups(band, ht22.CREA_MA, time_period),
+                *self._form_interpolation_groups(band, ht22.CREA_SF, time_period),
+            ]
+        if region == ht22.CAIONE:
+            return [
+                *self._form_interpolation_groups(band, ht22.CAIONE_AA, time_period),
+                *self._form_interpolation_groups(band, ht22.CAIONE_DW, time_period),
+                *self._form_interpolation_groups(band, ht22.CAIONE_MA, time_period),
+            ]
+        # single region processing
+        id_range = lambda first_id, last_id: [f"P{i}" for i in range(first_id, last_id + 1)] # first_id to last_id (including)
         df = self.moisture.load_soil_moisture(band, region, time_period)
         # split points into groups for specific fields and dates
         if region == ht22.CREA_BS_QU and time_period == ht22.APR_28_PM:
@@ -78,7 +90,7 @@ class HTERRA22MoistureInterpolated:
         Get interpolated soil moisture in LUT coordinate grid for the specified region and time period.    
         Soil moisture values range from 0 (0%) to 1 (100%).
         """
-        interpolation_groups = self._get_interpolation_groups(band, region_name, time_period_id)
+        interpolation_groups = self._form_interpolation_groups(band, region_name, time_period_id)
         (northing_min, northing_max), (easting_min, easting_max) = ht22.get_region_lut_coordinates(band, region_name)
         region_shape = (northing_max - northing_min, easting_max - easting_min)
         interpolated_soil_moisture_lut = np.full(region_shape, fill_value=np.nan, dtype=np.float32)
@@ -99,7 +111,7 @@ class HTERRA22MoistureInterpolated:
         Get interpolated soil moisture in SLC coordinate grid for the specified region and time period.    
         Soil moisture values range from 0 (0%) to 1 (100%).
         """
-        interpolation_groups = self._get_interpolation_groups(band, region_name, time_period_id)
+        interpolation_groups = self._form_interpolation_groups(band, region_name, time_period_id)
         (az_min, az_max), (rg_min, rg_max) = ht22.get_region_radar_coordinates(band, region_name)
         region_shape = (az_max - az_min, rg_max - rg_min)
         interpolated_soil_moisture_slc = np.full(region_shape, fill_value=np.nan, dtype=np.float32)
