@@ -37,12 +37,18 @@ The measurement include crop height, water content, biomass, and soil moisture.
 Campaign focusing on soil moisture in agricultural areas.
 The campaign was executed in two missions, the first one in April and the second one in June.
 There are 8 flights in total, most passes are zero-baseline, with a few exceptions.
-C- and L-band are avaialble.
+C- and L-band are available.
 
 Several fields were monitored during the campaign.
 The measurements include a large number of soil moisture points for each flight and some biomass measurements.
 
-! Data loaders are planned to be implemented !
+This package defines following constants:
+- 8 time periods correponding to the flights
+- several region names that cover specific fields + region extent in SLC and LUT coordinates
+
+This package provides following data loaders for ground measurements:
+- `HTERRA22Moisture` loads soil moisture point measurements collected by the ground teams over specific fields
+- `HTERRA22MoistureInterpolated` loads and interpolates point measurements to a raster in SLC or LUT coordinates
 
 
 ## License
