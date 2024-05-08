@@ -274,7 +274,7 @@ class HTERRA22MoistureV2:
         else: # single time period
             return [time_period]
 
-    def load_soil_moisture(self, band=None, region=None, time_period=None):
+    def load_soil_moisture_points(self, band=None, region=None, time_period=None):
         # read all points
         dfs = []
         for filename in [

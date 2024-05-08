@@ -44,7 +44,7 @@ class HTERRA22MoistureInterpolated:
             ]
         # single region processing
         id_range = lambda first_id, last_id: [f"P{i}" for i in range(first_id, last_id + 1)] # first_id to last_id (including)
-        df = self.moisture.load_soil_moisture(band, region, time_period)
+        df = self.moisture.load_soil_moisture_points(band, region, time_period)
         # split points into groups for specific fields and dates
         if region == ht22.CREA_BS_QU and time_period == ht22.APR_28_PM:
             return [
@@ -85,7 +85,7 @@ class HTERRA22MoistureInterpolated:
         # if none of the cases above, all points are in the same interpolation group
         return [df]
 
-    def load_interpolated_soil_moisture_lut(self, band, region_name, time_period_id):
+    def load_soil_moisture_lut_raster(self, band, region_name, time_period_id):
         """
         Get interpolated soil moisture in LUT coordinate grid for the specified region and time period.    
         Soil moisture values range from 0 (0%) to 1 (100%).
@@ -106,7 +106,7 @@ class HTERRA22MoistureInterpolated:
             interpolated_soil_moisture_lut[valid_points] = interpolated_group[valid_points]
         return interpolated_soil_moisture_lut
 
-    def load_interpolated_soil_moisture_slc(self, band, region_name, time_period_id):
+    def load_soil_moisture_slc_raster(self, band, region_name, time_period_id):
         """
         Get interpolated soil moisture in SLC coordinate grid for the specified region and time period.    
         Soil moisture values range from 0 (0%) to 1 (100%).
