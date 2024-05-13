@@ -21,7 +21,7 @@ def slc_to_pauli_rgb(slc_hh, slc_hv, slc_vh, slc_vv, window_az, window_rg, rgb_v
     Transform SLCs into Pauli RGB channels.
     Parameters:
         slc_hh, slc_hv, slc_vh, slc_vv - numpy array with SLC data, same shape
-        window_az, window_rg - multilook window in pixels
+        window_az, window_rg - multilook window in pixels for azimuth and range
         rgb_vmax - optional color max values, clipping is performed according to clip_pauli_rgb(r, g, b, rgb_vmax)
     Returns:
         r, g, b - Pauli RGB values, same shape as the SLCs, float values from 0 to 1 

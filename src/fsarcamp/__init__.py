@@ -10,3 +10,4 @@ from .multilook import convert_meters_to_pixels, convert_pixels_to_meters, conve
 from .fs_utils import get_polinsar_folder
 from .fsar_parameters import get_fsar_center_frequency, get_fsar_wavelength
 from .pauli_rgb import slc_to_pauli_rgb, coherency_matrix_to_pauli_rgb
+from .polsar import slc_to_coherency_matrix, h_a_alpha_decomposition
