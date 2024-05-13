@@ -8,7 +8,7 @@ from scipy.ndimage import zoom
 from scipy.interpolate import griddata, RectBivariateSpline
 import pyproj
 
-from phdstuff.fsar.lib_io import RatFile
+from fsarcamp.rat_io import RatFile
 #from blocks_griddata import blocks_griddata_2d     # Imported later if needed
 
 
