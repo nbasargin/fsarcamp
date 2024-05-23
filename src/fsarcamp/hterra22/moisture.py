@@ -15,7 +15,7 @@ class HTERRA22Moisture:
 
         Arguments:
             data_folder: path to the data folder that contains the CSV files with soil moisture measurements                         
-            hterra22campaign: reference to the F-SAR campaign
+            hterra22campaign: reference to the F-SAR campaign, required to geocode points to the SLC coordinates
 
         Usage example (data paths valid for DLR-HR server as of May 2024):
             import fsarcamp as fc
@@ -281,6 +281,27 @@ class HTERRA22Moisture:
             return [time_period]
 
     def load_soil_moisture_points(self, band=None, region=None, time_period=None):
+        """
+        Load point soil moisture measurements. If band is provided, the points coordinates (longitude, latitude)
+        will be additionally geocoded to the RGI azimuth and range coordinates using the F-SAR GTC-LUT files.
+
+        Arguments:
+            band: band ("C", or "L"), optional
+            region: region ID to spatially filter the points by specific field / region
+            time_period: time period ID to filter points that belong to a specific flight
+
+        Returns:
+            Pandas dataframe with following columns:
+                "date_time" - date and time of the measurement
+                "point_id" - point ID
+                "field" - indicates the field where the point was taken (including the field stripe)
+                "longitude", "latitude" - geographical coordinates
+                "soil_moisture" - calibrated soil moisture at that poition, value ranges from 0 to 1
+            If band and pass_name are provided, additionals columns are added:
+                "northing", "easting" - geographical coordinates in the LUT coordinate system (UTM zone 33)
+                "lut_northing", "lut_easting" - pixel coordinates within the LUT
+                "azimuth", "range" - pixel coordinates within the SLC
+        """
         # read all points
         dfs = []
         for filename in [
