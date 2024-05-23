@@ -311,10 +311,7 @@ class HTERRA22Moisture:
             self._filter_subset(df, *reg_time_filter) for reg_time_filter in filters
         ]
         if len(dataframes) == 0:
-            result = pd.DataFrame(columns=[
-                "date_time", "point_id", "field", "longitude", "latitude",
-                "soil_moisture", "easting", "northing",
-            ])
+            result = pd.DataFrame(columns=["date_time", "point_id", "field", "longitude", "latitude", "soil_moisture"])
         else:
             result = pd.concat(dataframes, ignore_index=True)        
         if band is not None:
