@@ -97,7 +97,7 @@ class CROPEX14Moisture:
         min_northing, min_easting = lut.c1 # max_northing, max_easting = lut.c2
         lut_northing = northing - min_northing
         lut_easting = easting - min_easting
-        # slc coordinates, assuming LUT posting of 1 meter (True for HTERRA22 campaign)
+        # slc coordinates, assuming LUT posting of 1 meter (True for CROPEX14 campaign)
         lut_northing_idx = np.rint(lut_northing).astype(np.int64)
         lut_easting_idx = np.rint(lut_easting).astype(np.int64)
         point_az = lut.lut_az[lut_northing_idx, lut_easting_idx]
