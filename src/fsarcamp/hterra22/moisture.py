@@ -6,17 +6,25 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 import pyproj
-import fsarcamp as fc
 import fsarcamp.hterra22 as ht22
 
 class HTERRA22Moisture:
-    def __init__(self, data_folder):
+    def __init__(self, data_folder, hterra22campaign: ht22.HTERRA22Campaign):
         """
-        The data_folder contains the CSV files with soil moisture measurements for the HTERRA22 campaign.
-        Default location on DLR servers as of May 2024:
-            fsarcamp.get_polinsar_folder() / "Ground_truth/HTerra_soil_2022/DataPackage_final"
+        Data loader for soil moisture ground measurements for the HTERRA 2022 campaign.
+
+        Arguments:
+            data_folder: path to the data folder that contains the CSV files with soil moisture measurements                         
+            hterra22campaign: reference to the F-SAR campaign
+
+        Usage example (data paths valid for DLR-HR server as of May 2024):
+            import fsarcamp as fc
+            import fsarcamp.hterra22 as ht22
+            campaign = ht22.HTERRA22Campaign(fc.get_polinsar_folder() / "01_projects/22HTERRA")
+            moisture = ht22.HTERRA22Moisture(fc.get_polinsar_folder() / "Ground_truth/HTerra_soil_2022/DataPackage_final", campaign)
         """
         self.data_folder = pathlib.Path(data_folder)
+        self.hterra22campaign = hterra22campaign
 
     def _get_region_time_filters(self) -> dict[str, dict[str, list]]:
         """
@@ -206,7 +214,7 @@ class HTERRA22Moisture:
         df["date_time"] = pd.to_datetime(df["date_time"])
         return df
         
-    def _extend_df_coords(self, df, band):        
+    def _extend_df_coords(self, df, band):
         # transformation: longitude-latitude to UTM zone 33 (LUT coordinates)
         proj_hterra22 = pyproj.Proj("epsg:32633") # UTM zone 33
         proj_latlong = pyproj.Proj(proj="latlong", ellps="WGS84", datum="WGS84")
@@ -215,8 +223,7 @@ class HTERRA22Moisture:
         long = df["longitude"].to_numpy()
         easting, northing = latlong_to_lut.transform(long, lat)
         # geocode to azimuth / range coordinates using LUT
-        campaign = ht22.HTERRA22Campaign(fc.get_polinsar_folder() / "01_projects/22HTERRA")
-        fsar_pass = campaign.get_pass("22hterra0104", band)
+        fsar_pass = self.hterra22campaign.get_pass("22hterra0104", band)
         lut = fsar_pass.load_gtc_lut()
         min_northing, min_easting = lut.c1 # max_northing, max_easting = lut.c2
         lut_northing = northing - min_northing

@@ -7,13 +7,21 @@ import pandas as pd
 import fsarcamp.hterra22 as ht22
 
 class HTERRA22MoistureInterpolated:
-    def __init__(self, data_folder):
+    def __init__(self, moisture: ht22.HTERRA22Moisture):
         """
-        The data_folder contains the CSV files with soil moisture measurements for the HTERRA22 campaign.
-        Default location on DLR servers as of May 2024:
-            fsarcamp.get_polinsar_folder() / "Ground_truth/HTerra_soil_2022/DataPackage_final"
+        Interpolation of the soil moisture ground measurements to the SLC grid for the HTERRA 2022 campaign.
+        
+        Arguments:
+            moisture: reference to the soil moisture loader (HTERRA22Moisture)
+        
+        Usage example (data paths valid for DLR-HR server as of May 2024):
+            import fsarcamp as fc
+            import fsarcamp.hterra22 as ht22
+            campaign = ht22.HTERRA22Campaign(fc.get_polinsar_folder() / "01_projects/22HTERRA")
+            moisture = ht22.HTERRA22Moisture(fc.get_polinsar_folder() / "Ground_truth/HTerra_soil_2022/DataPackage_final", campaign)
+            interpolated_moisture = ht22.HTERRA22MoistureInterpolated(moisture)
         """
-        self.moisture = ht22.HTERRA22Moisture(data_folder)
+        self.moisture = moisture
 
     def _filter_point_subset(self, sm_df, field_stripes=None, point_ids=None):
         if field_stripes:
