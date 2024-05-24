@@ -5,6 +5,7 @@ Provides field polygons and crop types.
 import numpy as np
 import geopandas as gpd
 import shapely
+from rasterio.features import rasterize
 import fsarcamp as fc
 import fsarcamp.cropex14 as cr14
 
@@ -43,7 +44,7 @@ class CROPEX14FieldMap:
         else:
             raise RuntimeError(f"Unknown geometry type: {lut_shape.geom_type}")
 
-    def load_fields(self, band=None, pass_name=None):
+    def load_fields(self, pass_name=None, band=None):
         gdf = gpd.read_file(self.shapefile_path)
         polygons_shapefile = gpd.GeoSeries(shapely.force_2d(gdf.geometry), crs=gdf.crs) # EPSG:31468 (3-degree Gauss-Kruger zone 4)
         polygons_long_lat = polygons_shapefile.to_crs(4326) # EPSG:4326 (longitude - latitude)
@@ -70,20 +71,51 @@ class CROPEX14FieldMap:
             polygons_easting_northing_lut: gpd.GeoSeries = polygons_easting_northing.copy()
             polygons_easting_northing_lut.crs = None
             polygons_easting_northing_lut = polygons_easting_northing_lut.translate(-min_easting, -min_northing)
-            print(polygons_easting_northing_lut)
             slc_poly_list = [self._geocode_shape(lut_poly, lut.lut_az, lut.lut_rg) for lut_poly in polygons_easting_northing_lut.to_list()]
-            processed_df.assign(
+            processed_df = processed_df.assign(
                 poly_easting_northing_lut = polygons_easting_northing_lut, # LUT pixel indices, easting northing
                 poly_azimuth_range = gpd.GeoSeries(slc_poly_list), # SLC pixel indices, azimuth range
             )
         return processed_df
 
+    def create_field_lut_raster(self, field_df: gpd.GeoDataFrame, data_column_name, invalid_value=np.nan):
+        """
+        Rasterize field data (stored in the `data_column_name` column) to the LUT raster.
+        Pixels that do not belong to any field are filled with `invalid_value`.
+        Arguments:
+            field_df - dataframe with the lut polygons ("poly_easting_northing_lut" column)
+            data_column_name - name of the column in the dataframe where to take the data for each field
+            invalid_value - value to fill pixels that do not belong to any field
+        """
+        # LUT is the same for all cropex flights (except one in September)
+        lut = self.cropex14campaign.get_pass("14cropex0203", "C").load_gtc_lut()
+        data_dtype = field_df[data_column_name].dtype
+        rasterized_values = np.full(lut.lut_az.shape, fill_value=invalid_value, dtype=data_dtype)
+        # group all fields with the same value into lists
+        value_to_fields = dict() # dict: data -> list of field polygons/shapes
+        for row in field_df.itertuples():
+            field_value = getattr(row, data_column_name)
+            field_lut_poly = row.poly_easting_northing_lut
+            if not field_value in value_to_fields:
+                value_to_fields[field_value] = [field_lut_poly]
+            else:
+                value_to_fields[field_value].append(field_lut_poly)
+        # rasterize fields with the same value together        
+        for field_value, field_polys in value_to_fields.items():
+            rasterized_values = rasterize(field_polys, out_shape=lut.lut_az.shape, default_value=field_value, out=rasterized_values)
+        return rasterized_values
+
 def main():
     shapefile_path = fc.get_polinsar_folder() / "Ground_truth/Wallerfing_campaign_May_August_2014/kmz-files/Land_use_Wallerfing_2014_shp+kmz/flugstreifen_wallerfing_feka2014.dbf"
     campaign = cr14.CROPEX14Campaign(fc.get_polinsar_folder() / "01_projects/CROPEX/CROPEX14")
     field_map = CROPEX14FieldMap(shapefile_path, campaign)
-    fmap = field_map.load_fields("C", "14cropex0203")
-    print(fmap)
+    fmap = field_map.load_fields("14cropex0203", "C")
+    rasterized = field_map.create_field_lut_raster(fmap, "num_crop_types")
+
+    import matplotlib.pyplot as plt
+    plt.figure()
+    plt.imshow(rasterized)
+    plt.savefig("visualization/test_raster.png", dpi=300)
 
 if __name__ == "__main__":
     main()
