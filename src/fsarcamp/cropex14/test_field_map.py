@@ -14,6 +14,59 @@ class CROPEX14FieldMap:
     def __init__(self, shapefile_path, cropex14campaign: cr14.CROPEX14Campaign):
         self.shapefile_path = shapefile_path
         self.cropex14campaign = cropex14campaign
+        # crop codes taken from "a6_codierung_fnn.pdf", more codes are available there
+        self._crop_code_to_name_dict = {
+            115: 'Winter wheat', # Winterweizen
+            116: 'Summer wheat', # Sommerweizen
+            131: 'Winter barley', # Wintergerste
+            132: 'Summer barley', # Sommergerste
+            140: 'Oat', # Hafer
+            156: 'Winter triticale', # Wintertriticale
+            157: 'Summer triticale', # Sommertriticale
+            171: 'Grain maize', # Körnermais
+            172: 'Corn-Cob-Mix', # Corn-Cob-Mix
+            210: 'Peas', # Erbsen
+            220: 'Beans', # Ackerbohnen
+            311: 'Winter rapeseed', # Winterraps
+            320: 'Sunflowers', # Sonnenblumen
+            411: 'Silage maize', # Silomais
+            422: 'Clover / alfalfa mix', # Kleegras, Klee-/Luzernegras-Gemisch 
+            423: 'Alfalfa', # Luzerne
+            424: 'Agricultural grass', # Ackergras
+            426: 'Other cereals as whole plant silage', # Sonstiges Getreide als Ganzpflanzensilage
+            441: 'Green areas', # Grünlandeinsaat (Wiesen, Mähweiden, Weiden)
+            451: 'Grasslands (incl Orchards)', # Wiesen (einschl. Streuobstwiesen) 
+            452: 'Mowed pastures', # Mähweiden
+            453: 'Pastures', # Weiden
+            460: 'Summer pastures for sheep walking', # Sommerweiden für Wanderschafe
+            560: 'Set aside arable land', # Stillgelegte Ackerflächen i. R. von AUM
+            567: 'Disused permanent grassland', # Stillgelegte Dauergrünlandflächen i. R. von AUM
+            591: 'Farmland out of production', # Ackerland aus der Erzeugung genommen
+            592: 'Set aside Grassland', # Dauergrünland aus der Erzeugung genommen
+            611: 'Potatoes', # Frühkartoffeln
+            612: 'Other potatoes', # Sonstige Speisekartoffeln
+            613: 'Industrial potatoes', # Industriekartoffeln
+            615: 'Seed potatoes', # Pflanzkartoffeln (alle Verwertungsformen)
+            619: 'Other potatoes', # Sonstige Kartoffeln (z. B. Futterkartoffeln) 
+            640: 'Starch potatoes', # Stärkekartoffeln (Vertragsanbau)
+            620: 'Sugar beet', # Zuckerrüben (ohne Samenvermehrung)
+            630: 'Jerusalem artichokes', # Topinambur
+            710: 'Vegetables', # Feldgemüse
+            720: 'Outdoor vegetables', # Gemüse im Freiland (gärtnerischer Anbau)
+            811: 'Pome and stone fruit', # Kern- und Steinobst
+            812: 'Orchard (without meadow / arable land)', # Streuobst (ohne Wiesen-/Ackernutzung)
+            824: 'Hazelnuts', # Haselnüsse
+            846: 'Christmas tree plantations outside the forest', # Christbaumkulturen außerhalb des Waldes
+            848: 'Short rotation forest trees (rotation period max. 20 years)', # Schnellwüchsige Forstgehölze (Umtriebszeit max. 20 Jahre)
+            851: 'Vines cultivated', # Bestockte Rebfläche
+            896: 'Miscanthus', # Chinaschilf (Miscanthus) 
+            897: 'Other perennial energy crops', # Sonstige mehrjährige Energiepflanzen (z. B. Riesenweizengras, Rutenhirse, Durchwachsene Silphie, Igniscum)
+            890: 'Other permanent crops', # Sonstige Dauerkulturen        
+            920: 'House garden', # Nicht landw. genutzte Haus- und Nutzgärten
+            980: 'Sudan grass', # Sudangras, Hirse
+            990: 'Other non used area', # Sonstige nicht landw. genutzte Fläche
+            996: 'Storage field', # Unbefestigte Mieten, Stroh-, Futter- und Dunglagerplätze (maximal ein Jahr) auf Ackerland
+        }
 
     def _geocode_shape(self, lut_shape, lut_az, lut_rg):
         """
@@ -132,6 +185,9 @@ class CROPEX14FieldMap:
         """
         slc = self.cropex14campaign.get_pass(pass_name, band).load_rgi_slc("hh")
         return self._create_field_raster(field_df, data_column_name, "poly_range_azimuth", slc.shape, invalid_value)
+    
+    def crop_code_to_description(self, crop_code):
+        return self._crop_code_to_name_dict[crop_code]
 
 def main():
     shapefile_path = fc.get_polinsar_folder() / "Ground_truth/Wallerfing_campaign_May_August_2014/kmz-files/Land_use_Wallerfing_2014_shp+kmz/flugstreifen_wallerfing_feka2014.dbf"
