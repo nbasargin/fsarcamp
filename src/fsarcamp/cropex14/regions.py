@@ -19,7 +19,7 @@ BARLEY_B1 = "BARLEY_B1"
 RAPESEED_R1 = "RAPESEED_R1"
 SUGAR_BEET_SB2 = "SUGAR_BEET_SB2"
 
-def field_to_long_lat_point(field_id):
+def field_id_to_long_lat_point(field_id):
     """
     CROPEX 2014 field ID to longitude-latitude coordinates.
     Returns a (longitude, latitude) tuple defining a point located on the field.
