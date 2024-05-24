@@ -3,6 +3,7 @@ Data loader for the CROPEX 2014 field map.
 Provides field polygons and crop types.
 """
 import numpy as np
+import pandas as pd
 import geopandas as gpd
 import shapely
 from rasterio.features import rasterize
@@ -16,56 +17,56 @@ class CROPEX14FieldMap:
         self.cropex14campaign = cropex14campaign
         # crop codes taken from "a6_codierung_fnn.pdf", more codes are available there
         self._crop_code_to_name_dict = {
-            115: 'Winter wheat', # Winterweizen
-            116: 'Summer wheat', # Sommerweizen
-            131: 'Winter barley', # Wintergerste
-            132: 'Summer barley', # Sommergerste
-            140: 'Oat', # Hafer
-            156: 'Winter triticale', # Wintertriticale
-            157: 'Summer triticale', # Sommertriticale
-            171: 'Grain maize', # Körnermais
-            172: 'Corn-Cob-Mix', # Corn-Cob-Mix
-            210: 'Peas', # Erbsen
-            220: 'Beans', # Ackerbohnen
-            311: 'Winter rapeseed', # Winterraps
-            320: 'Sunflowers', # Sonnenblumen
-            411: 'Silage maize', # Silomais
-            422: 'Clover / alfalfa mix', # Kleegras, Klee-/Luzernegras-Gemisch 
-            423: 'Alfalfa', # Luzerne
-            424: 'Agricultural grass', # Ackergras
-            426: 'Other cereals as whole plant silage', # Sonstiges Getreide als Ganzpflanzensilage
-            441: 'Green areas', # Grünlandeinsaat (Wiesen, Mähweiden, Weiden)
-            451: 'Grasslands (incl Orchards)', # Wiesen (einschl. Streuobstwiesen) 
-            452: 'Mowed pastures', # Mähweiden
-            453: 'Pastures', # Weiden
-            460: 'Summer pastures for sheep walking', # Sommerweiden für Wanderschafe
-            560: 'Set aside arable land', # Stillgelegte Ackerflächen i. R. von AUM
-            567: 'Disused permanent grassland', # Stillgelegte Dauergrünlandflächen i. R. von AUM
-            591: 'Farmland out of production', # Ackerland aus der Erzeugung genommen
-            592: 'Set aside Grassland', # Dauergrünland aus der Erzeugung genommen
-            611: 'Potatoes', # Frühkartoffeln
-            612: 'Other potatoes', # Sonstige Speisekartoffeln
-            613: 'Industrial potatoes', # Industriekartoffeln
-            615: 'Seed potatoes', # Pflanzkartoffeln (alle Verwertungsformen)
-            619: 'Other potatoes', # Sonstige Kartoffeln (z. B. Futterkartoffeln) 
-            640: 'Starch potatoes', # Stärkekartoffeln (Vertragsanbau)
-            620: 'Sugar beet', # Zuckerrüben (ohne Samenvermehrung)
-            630: 'Jerusalem artichokes', # Topinambur
-            710: 'Vegetables', # Feldgemüse
-            720: 'Outdoor vegetables', # Gemüse im Freiland (gärtnerischer Anbau)
-            811: 'Pome and stone fruit', # Kern- und Steinobst
-            812: 'Orchard (without meadow / arable land)', # Streuobst (ohne Wiesen-/Ackernutzung)
-            824: 'Hazelnuts', # Haselnüsse
-            846: 'Christmas tree plantations outside the forest', # Christbaumkulturen außerhalb des Waldes
-            848: 'Short rotation forest trees (rotation period max. 20 years)', # Schnellwüchsige Forstgehölze (Umtriebszeit max. 20 Jahre)
-            851: 'Vines cultivated', # Bestockte Rebfläche
-            896: 'Miscanthus', # Chinaschilf (Miscanthus) 
-            897: 'Other perennial energy crops', # Sonstige mehrjährige Energiepflanzen (z. B. Riesenweizengras, Rutenhirse, Durchwachsene Silphie, Igniscum)
-            890: 'Other permanent crops', # Sonstige Dauerkulturen        
-            920: 'House garden', # Nicht landw. genutzte Haus- und Nutzgärten
-            980: 'Sudan grass', # Sudangras, Hirse
-            990: 'Other non used area', # Sonstige nicht landw. genutzte Fläche
-            996: 'Storage field', # Unbefestigte Mieten, Stroh-, Futter- und Dunglagerplätze (maximal ein Jahr) auf Ackerland
+            115: "Winter wheat", # Winterweizen
+            116: "Summer wheat", # Sommerweizen
+            131: "Winter barley", # Wintergerste
+            132: "Summer barley", # Sommergerste
+            140: "Oat", # Hafer
+            156: "Winter triticale", # Wintertriticale
+            157: "Summer triticale", # Sommertriticale
+            171: "Grain maize", # Körnermais
+            172: "Corn-Cob-Mix", # Corn-Cob-Mix
+            210: "Peas", # Erbsen
+            220: "Beans", # Ackerbohnen
+            311: "Winter rapeseed", # Winterraps
+            320: "Sunflowers", # Sonnenblumen
+            411: "Silage maize", # Silomais
+            422: "Clover / alfalfa mix", # Kleegras, Klee-/Luzernegras-Gemisch 
+            423: "Alfalfa", # Luzerne
+            424: "Agricultural grass", # Ackergras
+            426: "Other cereals as whole plant silage", # Sonstiges Getreide als Ganzpflanzensilage
+            441: "Green areas", # Grünlandeinsaat (Wiesen, Mähweiden, Weiden)
+            451: "Grasslands (incl Orchards)", # Wiesen (einschl. Streuobstwiesen) 
+            452: "Mowed pastures", # Mähweiden
+            453: "Pastures", # Weiden
+            460: "Summer pastures for sheep walking", # Sommerweiden für Wanderschafe
+            560: "Set aside arable land", # Stillgelegte Ackerflächen i. R. von AUM
+            567: "Disused permanent grassland", # Stillgelegte Dauergrünlandflächen i. R. von AUM
+            591: "Farmland out of production", # Ackerland aus der Erzeugung genommen
+            592: "Set aside Grassland", # Dauergrünland aus der Erzeugung genommen
+            611: "Potatoes", # Frühkartoffeln
+            612: "Other potatoes", # Sonstige Speisekartoffeln
+            613: "Industrial potatoes", # Industriekartoffeln
+            615: "Seed potatoes", # Pflanzkartoffeln (alle Verwertungsformen)
+            619: "Other potatoes", # Sonstige Kartoffeln (z. B. Futterkartoffeln) 
+            640: "Starch potatoes", # Stärkekartoffeln (Vertragsanbau)
+            620: "Sugar beet", # Zuckerrüben (ohne Samenvermehrung)
+            630: "Jerusalem artichokes", # Topinambur
+            710: "Vegetables", # Feldgemüse
+            720: "Outdoor vegetables", # Gemüse im Freiland (gärtnerischer Anbau)
+            811: "Pome and stone fruit", # Kern- und Steinobst
+            812: "Orchard (without meadow / arable land)", # Streuobst (ohne Wiesen-/Ackernutzung)
+            824: "Hazelnuts", # Haselnüsse
+            846: "Christmas tree plantations outside the forest", # Christbaumkulturen außerhalb des Waldes
+            848: "Short rotation forest trees (rotation period max. 20 years)", # Schnellwüchsige Forstgehölze (Umtriebszeit max. 20 Jahre)
+            851: "Vines cultivated", # Bestockte Rebfläche
+            896: "Miscanthus", # Chinaschilf (Miscanthus) 
+            897: "Other perennial energy crops", # Sonstige mehrjährige Energiepflanzen (z. B. Riesenweizengras, Rutenhirse, Durchwachsene Silphie, Igniscum)
+            890: "Other permanent crops", # Sonstige Dauerkulturen        
+            920: "House garden", # Nicht landw. genutzte Haus- und Nutzgärten
+            980: "Sudan grass", # Sudangras, Hirse
+            990: "Other non used area", # Sonstige nicht landw. genutzte Fläche
+            996: "Storage field", # Unbefestigte Mieten, Stroh-, Futter- und Dunglagerplätze (maximal ein Jahr) auf Ackerland
         }
 
     def _geocode_shape(self, lut_shape, lut_az, lut_rg):
@@ -105,11 +106,11 @@ class CROPEX14FieldMap:
         processed_df = gpd.GeoDataFrame({
             "num_crop_types": gdf["nu14_anz_n"], # number of different crop types on that field
             # crop code (defines what was planted) and the corresponding area, up to 5 different crops
-            "crop_code_1": gdf["nu14_n_c1"], "crop_area_1": gdf["nu14_f_c1"],
-            "crop_code_2": gdf["nu14_n_c2"], "crop_area_2": gdf["nu14_f_c2"],
-            "crop_code_3": gdf["nu14_n_c3"], "crop_area_3": gdf["nu14_f_c3"],
-            "crop_code_4": gdf["nu14_n_c4"], "crop_area_4": gdf["nu14_f_c4"],
-            "crop_code_5": gdf["nu14_n_c5"], "crop_area_5": gdf["nu14_f_c5"],
+            "crop_code_1": pd.to_numeric(gdf["nu14_n_c1"]), "crop_area_1": gdf["nu14_f_c1"],
+            "crop_code_2": pd.to_numeric(gdf["nu14_n_c2"]), "crop_area_2": gdf["nu14_f_c2"],
+            "crop_code_3": pd.to_numeric(gdf["nu14_n_c3"]), "crop_area_3": gdf["nu14_f_c3"],
+            "crop_code_4": pd.to_numeric(gdf["nu14_n_c4"]), "crop_area_4": gdf["nu14_f_c4"],
+            "crop_code_5": pd.to_numeric(gdf["nu14_n_c5"]), "crop_area_5": gdf["nu14_f_c5"],
             # geometry: field polygon in different projections
             "poly_shapefile": polygons_shapefile, # shapefile geometry (3-degree Gauss-Kruger zone 4)
             "poly_longitude_latitude": polygons_long_lat, # longitude latitude
@@ -188,35 +189,3 @@ class CROPEX14FieldMap:
     
     def crop_code_to_description(self, crop_code):
         return self._crop_code_to_name_dict[crop_code]
-
-def main():
-    shapefile_path = fc.get_polinsar_folder() / "Ground_truth/Wallerfing_campaign_May_August_2014/kmz-files/Land_use_Wallerfing_2014_shp+kmz/flugstreifen_wallerfing_feka2014.dbf"
-    campaign = cr14.CROPEX14Campaign(fc.get_polinsar_folder() / "01_projects/CROPEX/CROPEX14")
-    field_map = CROPEX14FieldMap(shapefile_path, campaign)
-    pass_name, band = "14cropex0203", "C"
-    fmap = field_map.load_fields(pass_name, band)
-    field_slc_raster = field_map.create_field_slc_raster(fmap, "num_crop_types", pass_name, band)
-    field_lut_raster = field_map.create_field_lut_raster(fmap, "num_crop_types", pass_name, band)
-
-    fsar_pass = campaign.get_pass("14cropex0203", "C")
-    slc = fsar_pass.load_rgi_slc("hh")
-    lut = fsar_pass.load_gtc_lut()
-    hh_slc = np.abs(slc)
-    vmax = np.mean(hh_slc) * 2
-    hh_lut = fc.nearest_neighbor_lookup(hh_slc, lut.lut_az, lut.lut_rg)
-
-    import matplotlib.pyplot as plt
-    plt.figure()
-    plt.imshow(hh_slc, vmin=0, vmax=vmax)
-    plt.imshow(field_slc_raster, cmap="jet")
-    plt.savefig("visualization/test_raster_slc.png", dpi=300)
-    plt.close("all")
-
-    plt.figure()
-    plt.imshow(hh_lut, vmin=0, vmax=vmax)
-    plt.imshow(field_lut_raster, cmap="jet")
-    plt.savefig("visualization/test_raster_lut.png", dpi=300)
-    plt.close("all")
-
-if __name__ == "__main__":
-    main()
