@@ -40,7 +40,7 @@ class CROPEX14FieldMap:
             point_rg[invalid_indices] = np.nan
             if np.any(np.isnan(point_az)) or np.any(np.isnan(point_rg)):
                 return None # some points invalid
-            return shapely.Polygon(np.stack((point_az, point_rg), axis=1))
+            return shapely.Polygon(np.stack((point_rg, point_az), axis=1))
         else:
             raise RuntimeError(f"Unknown geometry type: {lut_shape.geom_type}")
 
@@ -74,48 +74,93 @@ class CROPEX14FieldMap:
             slc_poly_list = [self._geocode_shape(lut_poly, lut.lut_az, lut.lut_rg) for lut_poly in polygons_easting_northing_lut.to_list()]
             processed_df = processed_df.assign(
                 poly_easting_northing_lut = polygons_easting_northing_lut, # LUT pixel indices, easting northing
-                poly_azimuth_range = gpd.GeoSeries(slc_poly_list), # SLC pixel indices, azimuth range
+                poly_range_azimuth = gpd.GeoSeries(slc_poly_list), # SLC pixel indices, azimuth range
             )
         return processed_df
-
-    def create_field_lut_raster(self, field_df: gpd.GeoDataFrame, data_column_name, invalid_value=np.nan):
+    
+    def _create_field_raster(self, field_df: gpd.GeoDataFrame, data_column_name, geometry_column_name, out_shape, invalid_value):
         """
-        Rasterize field data (stored in the `data_column_name` column) to the LUT raster.
+        Rasterize field data (in the `data_column_name` column) to field geometry (in the `geometry_column_name` column).
         Pixels that do not belong to any field are filled with `invalid_value`.
         Arguments:
             field_df - dataframe with the lut polygons ("poly_easting_northing_lut" column)
             data_column_name - name of the column in the dataframe where to take the data for each field
+            geometry_column_name - name of the column with field geometry (polygons)
+            out_shape - shape of the raster
             invalid_value - value to fill pixels that do not belong to any field
         """
-        # LUT is the same for all cropex flights (except one in September)
-        lut = self.cropex14campaign.get_pass("14cropex0203", "C").load_gtc_lut()
         data_dtype = field_df[data_column_name].dtype
-        rasterized_values = np.full(lut.lut_az.shape, fill_value=invalid_value, dtype=data_dtype)
+        rasterized_values = np.full(out_shape, fill_value=invalid_value, dtype=data_dtype)
         # group all fields with the same value into lists
         value_to_fields = dict() # dict: data -> list of field polygons/shapes
         for row in field_df.itertuples():
             field_value = getattr(row, data_column_name)
-            field_lut_poly = row.poly_easting_northing_lut
+            field_lut_poly = getattr(row, geometry_column_name)
+            if field_lut_poly is None:
+                continue
             if not field_value in value_to_fields:
                 value_to_fields[field_value] = [field_lut_poly]
             else:
                 value_to_fields[field_value].append(field_lut_poly)
         # rasterize fields with the same value together        
         for field_value, field_polys in value_to_fields.items():
-            rasterized_values = rasterize(field_polys, out_shape=lut.lut_az.shape, default_value=field_value, out=rasterized_values)
+            rasterized_values = rasterize(field_polys, out_shape=out_shape, default_value=field_value, out=rasterized_values)
         return rasterized_values
+
+    def create_field_lut_raster(self, field_df: gpd.GeoDataFrame, data_column_name, pass_name, band, invalid_value=np.nan):
+        """
+        Rasterize field data (stored in the `data_column_name` column) to the LUT raster.
+        Pixels that do not belong to any field are filled with `invalid_value`.
+        Arguments:
+            field_df - dataframe with data and lut geometry columns
+            data_column_name - name of the column in the dataframe where to take the data for each field
+            pass_name, band - F-SAR pass name and band (most passes have the same LUT coordinates but there are exceptions)
+            invalid_value - value to fill pixels that do not belong to any field
+        """
+        lut = self.cropex14campaign.get_pass(pass_name, band).load_gtc_lut()
+        return self._create_field_raster(field_df, data_column_name, "poly_easting_northing_lut", lut.lut_az.shape, invalid_value)
+    
+    def create_field_slc_raster(self, field_df: gpd.GeoDataFrame, data_column_name, pass_name, band, invalid_value=np.nan):
+        """
+        Rasterize field data (stored in the `data_column_name` column) to the SLC raster.
+        Pixels that do not belong to any field are filled with `invalid_value`.
+        Arguments:
+            field_df - dataframe with data and slc geometry columns
+            data_column_name - name of the column in the dataframe where to take the data for each field
+            pass_name, band - F-SAR pass name and band (each pass can have different SLC coordinate system)
+            invalid_value - value to fill pixels that do not belong to any field
+        """
+        slc = self.cropex14campaign.get_pass(pass_name, band).load_rgi_slc("hh")
+        return self._create_field_raster(field_df, data_column_name, "poly_range_azimuth", slc.shape, invalid_value)
 
 def main():
     shapefile_path = fc.get_polinsar_folder() / "Ground_truth/Wallerfing_campaign_May_August_2014/kmz-files/Land_use_Wallerfing_2014_shp+kmz/flugstreifen_wallerfing_feka2014.dbf"
     campaign = cr14.CROPEX14Campaign(fc.get_polinsar_folder() / "01_projects/CROPEX/CROPEX14")
     field_map = CROPEX14FieldMap(shapefile_path, campaign)
-    fmap = field_map.load_fields("14cropex0203", "C")
-    rasterized = field_map.create_field_lut_raster(fmap, "num_crop_types")
+    pass_name, band = "14cropex0203", "C"
+    fmap = field_map.load_fields(pass_name, band)
+    field_slc_raster = field_map.create_field_slc_raster(fmap, "num_crop_types", pass_name, band)
+    field_lut_raster = field_map.create_field_lut_raster(fmap, "num_crop_types", pass_name, band)
+
+    fsar_pass = campaign.get_pass("14cropex0203", "C")
+    slc = fsar_pass.load_rgi_slc("hh")
+    lut = fsar_pass.load_gtc_lut()
+    hh_slc = np.abs(slc)
+    vmax = np.mean(hh_slc) * 2
+    hh_lut = fc.nearest_neighbor_lookup(hh_slc, lut.lut_az, lut.lut_rg)
 
     import matplotlib.pyplot as plt
     plt.figure()
-    plt.imshow(rasterized)
-    plt.savefig("visualization/test_raster.png", dpi=300)
+    plt.imshow(hh_slc, vmin=0, vmax=vmax)
+    plt.imshow(field_slc_raster, cmap="jet")
+    plt.savefig("visualization/test_raster_slc.png", dpi=300)
+    plt.close("all")
+
+    plt.figure()
+    plt.imshow(hh_lut, vmin=0, vmax=vmax)
+    plt.imshow(field_lut_raster, cmap="jet")
+    plt.savefig("visualization/test_raster_lut.png", dpi=300)
+    plt.close("all")
 
 if __name__ == "__main__":
     main()
