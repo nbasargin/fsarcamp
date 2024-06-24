@@ -5,7 +5,7 @@ import numpy as np
 import pyproj
 import fsarcamp as fc
 
-class NorthingEastingToAzimuthRangeLUT:
+class Geo2SlantRange:
     """
     F-SAR lookup table (LUT) for geocoding between Azimuth-Range and Northing-Easting geo coordinates.
     The first LUT axis refers to the northing coordinate, the second axis to the easting coordinate.

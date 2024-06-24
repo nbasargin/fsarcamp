@@ -157,7 +157,7 @@ class CROPEX14Pass:
         pass_folder = self._get_pass_try_folder()
         fname_lut_az = pass_folder / "GTC" / "GTC-LUT" / f"sr2geo_az_{self.pass_name}_{self.band}_t01.rat"
         fname_lut_rg = pass_folder / "GTC" / "GTC-LUT" / f"sr2geo_rg_{self.pass_name}_{self.band}_t01.rat"
-        return fc.NorthingEastingToAzimuthRangeLUT(fname_lut_az, fname_lut_rg)
+        return fc.Geo2SlantRange(fname_lut_az, fname_lut_rg)
 
     # Helpers
 

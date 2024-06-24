@@ -44,7 +44,7 @@ def nearest_neighbor_lookup(img: np.ndarray, lut_az, lut_rg, inv_value=np.nan) -
     geocoded[invalid_positions] = inv_value
     return geocoded
 
-def geocode_lat_lon_to_north_east(longitude, latitude, lut: fc.NorthingEastingToAzimuthRangeLUT):
+def geocode_lat_lon_to_north_east(longitude, latitude, lut: fc.Geo2SlantRange):
     """
     Transform latitude-longitude coordinates to northing-easting coordinates matching the F-SAR GTC lookup table projection.
     Note: the northing-easting values are geographical coordinates and not the lookup table indices.
@@ -54,7 +54,7 @@ def geocode_lat_lon_to_north_east(longitude, latitude, lut: fc.NorthingEastingTo
     easting, northing = latlong_to_lut.transform(longitude, latitude)
     return northing, easting
 
-def geocode_north_east_to_az_rg(northing, easting, lut: fc.NorthingEastingToAzimuthRangeLUT):
+def geocode_north_east_to_az_rg(northing, easting, lut: fc.Geo2SlantRange):
     """
     Geocode northing-easting coordinates (projection of the F-SAR GTC lookup table) to SLC geometry (azimuth-range).
     First, the appropriate pixels corresponding to the northing-easting coordinates are selected in the lookup table.
@@ -66,7 +66,7 @@ def geocode_north_east_to_az_rg(northing, easting, lut: fc.NorthingEastingToAzim
     range_idx = lut.lut_rg[lut_northing_idx, lut_easting_idx]
     return azimuth_idx, range_idx
 
-def geocode_lat_lon_to_az_rg(longitude, latitude, lut: fc.NorthingEastingToAzimuthRangeLUT):
+def geocode_lat_lon_to_az_rg(longitude, latitude, lut: fc.Geo2SlantRange):
     """
     Geocode latitude-longitude coordinates to SLC geometry (azimuth-range) using the F-SAR GTC lookup table.
     This function applies `geocode_lat_lon_to_north_east` followed by `geocode_north_east_to_az_rg`.
