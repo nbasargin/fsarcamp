@@ -2,6 +2,8 @@
 Functions related to geocoding and pixel lookup.
 """
 import numpy as np
+import fsarcamp as fc
+import pyproj
 
 def nearest_neighbor_lookup(img: np.ndarray, lut_az, lut_rg, inv_value=np.nan) -> np.ndarray:
     """
@@ -41,3 +43,34 @@ def nearest_neighbor_lookup(img: np.ndarray, lut_az, lut_rg, inv_value=np.nan) -
     # apply invalid mask
     geocoded[invalid_positions] = inv_value
     return geocoded
+
+def geocode_lat_lon_to_north_east(longitude, latitude, lut: fc.NorthingEastingToAzimuthRangeLUT):
+    """
+    Transform latitude-longitude coordinates to northing-easting coordinates matching the F-SAR GTC lookup table projection.
+    Note: the northing-easting values are geographical coordinates and not the lookup table indices.
+    """
+    proj_latlong = pyproj.Proj(proj="latlong", ellps="WGS84", datum="WGS84")
+    latlong_to_lut = pyproj.Transformer.from_proj(proj_latlong, lut.projection)
+    easting, northing = latlong_to_lut.transform(longitude, latitude)
+    return northing, easting
+
+def geocode_north_east_to_az_rg(northing, easting, lut: fc.NorthingEastingToAzimuthRangeLUT):
+    """
+    Geocode northing-easting coordinates (projection of the F-SAR GTC lookup table) to SLC geometry (azimuth-range).
+    First, the appropriate pixels corresponding to the northing-easting coordinates are selected in the lookup table.
+    The lookup table then provides the azimuth and range indices at the pixel positions.
+    """
+    lut_northing_idx = np.rint((northing - lut.min_north) / lut.pixel_spacing_north).astype(np.int64)
+    lut_easting_idx = np.rint((easting - lut.min_east) / lut.pixel_spacing_east).astype(np.int64)
+    azimuth_idx = lut.lut_az[lut_northing_idx, lut_easting_idx]
+    range_idx = lut.lut_rg[lut_northing_idx, lut_easting_idx]
+    return azimuth_idx, range_idx
+
+def geocode_lat_lon_to_az_rg(longitude, latitude, lut: fc.NorthingEastingToAzimuthRangeLUT):
+    """
+    Geocode latitude-longitude coordinates to SLC geometry (azimuth-range) using the F-SAR GTC lookup table.
+    This function applies `geocode_lat_lon_to_north_east` followed by `geocode_north_east_to_az_rg`.
+    """
+    northing, easting = geocode_lat_lon_to_north_east(longitude, latitude, lut)
+    azimuth_idx, range_idx = geocode_north_east_to_az_rg(northing, easting, lut)
+    return azimuth_idx, range_idx
