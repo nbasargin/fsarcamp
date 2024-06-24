@@ -7,7 +7,6 @@ import pandas as pd
 import geopandas as gpd
 import shapely
 from rasterio.features import rasterize
-import fsarcamp as fc
 import fsarcamp.cropex14 as cr14
 
 class CROPEX14FieldMap:
