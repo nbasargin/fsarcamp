@@ -1,5 +1,5 @@
 import pathlib
-from fsarcamp import campaign_utils, rat_io, lut, fsar_lut
+from fsarcamp import campaign_utils, rat_io, fsar_lut
 
 class CROPEX14Campaign:
     def __init__(self, campaign_folder):
@@ -152,13 +152,6 @@ class CROPEX14Pass:
 
     # GTC folder
 
-    # DEPRECATED, use load_gtc_sr2geo_lut instead
-    def load_gtc_lut(self):
-        pass_folder = self._get_pass_try_folder()
-        fname_lut_az = pass_folder / "GTC" / "GTC-LUT" / f"sr2geo_az_{self.pass_name}_{self.band}_t01.rat"
-        fname_lut_rg = pass_folder / "GTC" / "GTC-LUT" / f"sr2geo_rg_{self.pass_name}_{self.band}_t01.rat"
-        return lut.LUT.from_FSAR_lut_utm_files(fname_lut_az, fname_lut_rg)
-    
     def load_gtc_sr2geo_lut(self):
         pass_folder = self._get_pass_try_folder()
         fname_lut_az = pass_folder / "GTC" / "GTC-LUT" / f"sr2geo_az_{self.pass_name}_{self.band}_t01.rat"
