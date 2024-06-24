@@ -3,9 +3,8 @@ Data loader for soil moisture ground measurements for the HTERRA 2022 campaign.
 """
 import pathlib
 from datetime import datetime
-import numpy as np
 import pandas as pd
-import pyproj
+import fsarcamp as fc
 import fsarcamp.hterra22 as ht22
 
 class HTERRA22Moisture:
@@ -14,7 +13,7 @@ class HTERRA22Moisture:
         Data loader for soil moisture ground measurements for the HTERRA 2022 campaign.
 
         Arguments:
-            data_folder: path to the data folder that contains the CSV files with soil moisture measurements                         
+            data_folder: path to the data folder that contains the CSV files with soil moisture measurements
             hterra22campaign: reference to the F-SAR campaign, required to geocode points to the SLC coordinates
 
         Usage example (data paths valid for DLR-HR server as of May 2024):
@@ -74,7 +73,7 @@ class HTERRA22Moisture:
                 ht22.APR_28_AM: [
                     # CAIONE_DW, field 1, north part, 1 stripe
                     ("CAIONE1_DURUMWHEAT29", "2022-04-28T09:10:00", "2022-04-28T10:28:00"),
-                    # CAIONE_DW, field 1, south part, 2 stripes    
+                    # CAIONE_DW, field 1, south part, 2 stripes
                     ("CAIONE1_DURUMWHEAT24", "2022-04-28T13:25:00", "2022-04-28T13:50:00"),
                     ("CAIONE1_DURUMWHEAT27", "2022-04-28T11:48:00", "2022-04-28T12:52:00"),
                     # CAIONE_DW, field 2, north part, 1 stripe
@@ -94,7 +93,7 @@ class HTERRA22Moisture:
                     # CAIONE_DW, field 2, south part, 2 stripes
                     ("CAIONE2_DURUMWHEAT24", "2022-04-28T17:22:00", "2022-04-28T17:41:00"),
                     ("CAIONE2_DURUMWHEAT27", "2022-04-28T16:31:00", "2022-04-28T16:59:00"),
-                ],                
+                ],
                 ht22.APR_29_AM: [
                     # CAIONE_DW, field 1, 3 stripes
                     ("CAIONE1_DURUMWHEAT24", "2022-04-29 10:38:00", "2022-04-29 11:22:00"),
@@ -140,7 +139,7 @@ class HTERRA22Moisture:
                     ("CREA_MAIS2", "2022-06-16 14:14:00", "2022-06-16 14:24:00"),
                 ]
             },
-            ht22.CAIONE_AA: {                
+            ht22.CAIONE_AA: {
                 ht22.JUN_15_AM: [
                     ("CAIONE_ALFAALFA1", "2022-06-15 09:48:00", "2022-06-15 10:13:00"),
                     ("CAIONE_ALFAALFA2", "2022-06-15 10:26:00", "2022-06-15 10:38:00"),
@@ -162,7 +161,7 @@ class HTERRA22Moisture:
                     ("CAIONE_ALFAALFA3", "2022-06-16 14:39:00", "2022-06-16 14:51:00"),
                 ],
             },
-            ht22.CAIONE_MA: {        
+            ht22.CAIONE_MA: {
                 ht22.JUN_15_AM: [
                     # west: 3 strips
                     ("CAIONE_MAIS1", "2022-06-15 09:05:00", "2022-06-15 10:04:00"),
@@ -213,26 +212,16 @@ class HTERRA22Moisture:
         })
         df["date_time"] = pd.to_datetime(df["date_time"])
         return df
-        
+
     def _extend_df_coords(self, df, band):
-        # transformation: longitude-latitude to UTM zone 33 (LUT coordinates)
-        proj_hterra22 = pyproj.Proj("epsg:32633") # UTM zone 33
-        proj_latlong = pyproj.Proj(proj="latlong", ellps="WGS84", datum="WGS84")
-        latlong_to_lut = pyproj.Transformer.from_proj(proj_latlong, proj_hterra22)
-        lat = df["latitude"].to_numpy()
-        long = df["longitude"].to_numpy()
-        easting, northing = latlong_to_lut.transform(long, lat)
-        # geocode to azimuth / range coordinates using LUT
         fsar_pass = self.hterra22campaign.get_pass("22hterra0104", band)
-        lut = fsar_pass.load_gtc_lut()
-        min_northing, min_easting = lut.c1 # max_northing, max_easting = lut.c2
-        lut_northing = northing - min_northing
-        lut_easting = easting - min_easting
-        # slc coordinates, assuming LUT posting of 1 meter (True for HTERRA22 campaign)
-        lut_northing_idx = np.rint(lut_northing).astype(np.int64)
-        lut_easting_idx = np.rint(lut_easting).astype(np.int64)
-        point_az = lut.lut_az[lut_northing_idx, lut_easting_idx]
-        point_rg = lut.lut_rg[lut_northing_idx, lut_easting_idx]
+        lut = fsar_pass.load_gtc_sr2geo_lut()
+        latitude = df["latitude"].to_numpy()
+        longitude = df["longitude"].to_numpy()
+        northing, easting = fc.geocode_lat_lon_to_north_east(longitude, latitude, lut)
+        lut_northing = (northing - lut.min_north) / lut.pixel_spacing_north
+        lut_easting = (easting - lut.min_east) / lut.pixel_spacing_east
+        point_az, point_rg = fc.geocode_north_east_to_az_rg(northing, easting, lut)
         # extend data frame
         df_extended = df.assign(
             northing=northing,
@@ -299,13 +288,12 @@ class HTERRA22Moisture:
                 "soil_moisture" - calibrated soil moisture at that poition, value ranges from 0 to 1
             If band and pass_name are provided, additionals columns are added:
                 "northing", "easting" - geographical coordinates in the LUT coordinate system (UTM zone 33)
-                "lut_northing", "lut_easting" - pixel coordinates within the LUT
                 "azimuth", "range" - pixel coordinates within the SLC
         """
         # read all points
         dfs = []
         for filename in [
-            "CA1_DW_24.csv", "CA1_DW_27.csv", "CA1_DW_28.csv", "CA1_DW_29.csv", 
+            "CA1_DW_24.csv", "CA1_DW_27.csv", "CA1_DW_28.csv", "CA1_DW_29.csv",
             "CA2_DW_24.csv", "CA2_DW_27.csv", "CA2_DW_28.csv", "CA2_DW_29.csv"
         ]:
             april_caione_folder = self.data_folder / "April22/soil_moisture_sensors/CAIONE"
@@ -341,7 +329,7 @@ class HTERRA22Moisture:
         if len(dataframes) == 0:
             result = pd.DataFrame(columns=["date_time", "point_id", "field", "longitude", "latitude", "soil_moisture"])
         else:
-            result = pd.concat(dataframes, ignore_index=True)        
+            result = pd.concat(dataframes, ignore_index=True)
         if band is not None:
             result = self._extend_df_coords(result, band)
         return result

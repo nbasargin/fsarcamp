@@ -38,7 +38,7 @@ def example_crop_mask_raster():
     # load SLC data for the backdrop
     fsar_pass = campaign.get_pass("14cropex0203", "C")
     slc = fsar_pass.load_rgi_slc("hh")
-    lut = fsar_pass.load_gtc_lut()
+    lut = fsar_pass.load_gtc_sr2geo_lut()
     hh_slc = np.abs(slc)
     vmax = np.mean(hh_slc) * 2
     hh_lut = fc.nearest_neighbor_lookup(hh_slc, lut.lut_az, lut.lut_rg)

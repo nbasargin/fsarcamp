@@ -119,12 +119,11 @@ class CROPEX14FieldMap:
         if band is not None and pass_name is not None:
             # create field polygons in LUT and SLC pixel coordinates
             fsar_pass = self.cropex14campaign.get_pass(pass_name, band)
-            lut = fsar_pass.load_gtc_lut()
-            min_northing, min_easting = lut.c1 # max_northing, max_easting = lut.c2
+            lut = fsar_pass.load_gtc_sr2geo_lut()
             # translate each polygon to the LUT indices
             polygons_easting_northing_lut: gpd.GeoSeries = polygons_easting_northing.copy()
             polygons_easting_northing_lut.crs = None
-            polygons_easting_northing_lut = polygons_easting_northing_lut.translate(-min_easting, -min_northing)
+            polygons_easting_northing_lut = polygons_easting_northing_lut.translate(-lut.min_east, -lut.min_north)
             slc_poly_list = [self._geocode_shape(lut_poly, lut.lut_az, lut.lut_rg) for lut_poly in polygons_easting_northing_lut.to_list()]
             processed_df = processed_df.assign(
                 poly_easting_northing_lut = polygons_easting_northing_lut, # LUT pixel indices, easting northing
@@ -171,7 +170,7 @@ class CROPEX14FieldMap:
             pass_name, band - F-SAR pass name and band (most passes have the same LUT coordinates but there are exceptions)
             invalid_value - value to fill pixels that do not belong to any field
         """
-        lut = self.cropex14campaign.get_pass(pass_name, band).load_gtc_lut()
+        lut = self.cropex14campaign.get_pass(pass_name, band).load_gtc_sr2geo_lut()
         return self._create_field_raster(field_df, data_column_name, "poly_easting_northing_lut", lut.lut_az.shape, invalid_value)
     
     def create_field_slc_raster(self, field_df: gpd.GeoDataFrame, data_column_name, pass_name, band, invalid_value=np.nan):

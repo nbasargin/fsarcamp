@@ -6,17 +6,16 @@ import pathlib
 import datetime
 import numpy as np
 import pandas as pd
-import pyproj
-
+import fsarcamp as fc
 import fsarcamp.cropex14 as cr14
 
 class CROPEX14Moisture:
     def __init__(self, data_folder, cropex14campaign: cr14.CROPEX14Campaign):
-        """        
+        """
         Data loader for soil moisture ground measurements for the CROPEX 2014 campaign.
 
         Arguments:
-            data_folder: path to the data folder that contains the XLSX files with soil moisture measurements                      
+            data_folder: path to the data folder that contains the XLSX files with soil moisture measurements
             cropex14campaign: reference to the F-SAR campaign, required to geocode points to the SLC coordinates
 
         Usage example (data paths valid for DLR-HR server as of May 2024):
@@ -34,12 +33,6 @@ class CROPEX14Moisture:
             return float(value)
         except:
             return np.nan
-
-    def _get_lat_long_to_lut_transformer(self):
-        lut_proj = pyproj.Proj("epsg:32633") # UTM zone 33
-        proj_latlong = pyproj.Proj(proj="latlong", ellps="WGS84", datum="WGS84")
-        latlong_to_lut = pyproj.Transformer.from_proj(proj_latlong, lut_proj)
-        return latlong_to_lut
 
     def _read_soil_moisture_sheet(self, file_path, sheet_name, num_rows, field_name, point_id_offset=0):
         """
@@ -83,25 +76,15 @@ class CROPEX14Moisture:
             "soil_moisture_1", "soil_moisture_2", "soil_moisture_3", "soil_moisture_4", "soil_moisture_5", "soil_moisture_6",
         ])
 
-    def _extend_df_coords(self, df, band, pass_name):        
-        # transformation: longitude-latitude to UTM zone 33 (LUT coordinates)
-        proj_cropex14 = pyproj.Proj("epsg:32633") # UTM zone 33
-        proj_latlong = pyproj.Proj(proj="latlong", ellps="WGS84", datum="WGS84")
-        latlong_to_lut = pyproj.Transformer.from_proj(proj_latlong, proj_cropex14)
-        lat = df["latitude"].to_numpy()
-        long = df["longitude"].to_numpy()
-        easting, northing = latlong_to_lut.transform(long, lat)
-        # geocode to azimuth / range coordinates using LUT
+    def _extend_df_coords(self, df, band, pass_name):
         fsar_pass = self.cropex14campaign.get_pass(pass_name, band)
-        lut = fsar_pass.load_gtc_lut()
-        min_northing, min_easting = lut.c1 # max_northing, max_easting = lut.c2
-        lut_northing = northing - min_northing
-        lut_easting = easting - min_easting
-        # slc coordinates, assuming LUT posting of 1 meter (True for CROPEX14 campaign)
-        lut_northing_idx = np.rint(lut_northing).astype(np.int64)
-        lut_easting_idx = np.rint(lut_easting).astype(np.int64)
-        point_az = lut.lut_az[lut_northing_idx, lut_easting_idx]
-        point_rg = lut.lut_rg[lut_northing_idx, lut_easting_idx]
+        lut = fsar_pass.load_gtc_sr2geo_lut()
+        latitude = df["latitude"].to_numpy()
+        longitude = df["longitude"].to_numpy()
+        northing, easting = fc.geocode_lat_lon_to_north_east(longitude, latitude, lut)
+        lut_northing = (northing - lut.min_north) / lut.pixel_spacing_north
+        lut_easting = (easting - lut.min_east) / lut.pixel_spacing_east
+        point_az, point_rg = fc.geocode_north_east_to_az_rg(northing, easting, lut)
         # extend data frame
         df_extended = df.assign(
             northing=northing,
@@ -115,7 +98,7 @@ class CROPEX14Moisture:
 
     def load_soil_moisture_points(self, band=None, pass_name=None):
         """
-        Load point soil moisture measurements. If band and pass_name are provided, the points coordinates 
+        Load point soil moisture measurements. If band and pass_name are provided, the points coordinates
         (longitude, latitude) will be additionally geocoded to the RGI azimuth and range coordinates using the F-SAR GTC-LUT files.
 
         Arguments:
@@ -126,7 +109,7 @@ class CROPEX14Moisture:
             Pandas dataframe with following columns:
                 "date_time" - date and time of the measurement, time is missing for some points and set to 0:00
                 "point_id" - point ID, based on the row number of the excel sheet
-                "field" - indicates the field where the point was taken ("Triangular", "Meteo", or "Big") 
+                "field" - indicates the field where the point was taken ("Triangular", "Meteo", or "Big")
                 "longitude", "latitude" - geographical coordinates
                 "soil_moisture" - average soil moisture from several samples at that position, value ranges from 0 to 1
                 "soil_moisture_1", ..., "soil_moisture_6" - individual moisture measurements at that position
