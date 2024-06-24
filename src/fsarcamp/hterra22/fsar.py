@@ -1,5 +1,5 @@
 import pathlib
-from fsarcamp import campaign_utils, rat_io, lut
+from fsarcamp import campaign_utils, rat_io, lut, fsar_lut
 
 class HTERRA22Campaign:
     def __init__(self, campaign_folder):
@@ -119,11 +119,18 @@ class HTERRA22Pass:
 
     # GTC folder
 
+    # DEPRECATED, use load_gtc_sr2geo_lut instead
     def load_gtc_lut(self):
         rgi_folder, inf_folder, gtc_folder, try_suffix = self._get_path_parts()
         fname_lut_az = gtc_folder / "GTC-LUT" / f"sr2geo_az_22hterra0104_{self.band}_{try_suffix}.rat"
         fname_lut_rg = gtc_folder / "GTC-LUT" / f"sr2geo_rg_22hterra0104_{self.band}_{try_suffix}.rat"
         return lut.LUT.from_FSAR_lut_utm_files(fname_lut_az, fname_lut_rg)
+    
+    def load_gtc_sr2geo_lut(self):
+        rgi_folder, inf_folder, gtc_folder, try_suffix = self._get_path_parts()
+        fname_lut_az = gtc_folder / "GTC-LUT" / f"sr2geo_az_22hterra0104_{self.band}_{try_suffix}.rat"
+        fname_lut_rg = gtc_folder / "GTC-LUT" / f"sr2geo_rg_22hterra0104_{self.band}_{try_suffix}.rat"
+        return fsar_lut.NorthingEastingToAzimuthRangeLUT(fname_lut_az, fname_lut_rg)
 
     # Helpers
 
