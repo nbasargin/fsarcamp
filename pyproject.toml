@@ -5,6 +5,16 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "fsarcamp"
 version = "0.1.0"
+dependencies = [
+  "numpy",
+  "scipy",
+  "shapely",
+  "matplotlib",
+  "pandas",
+  "geopandas",
+  "rasterio",
+  "pyproj",
+]
 license = {file = "LICENSE"}
 description = "Data loaders for F-SAR campaigns"
 authors = [
