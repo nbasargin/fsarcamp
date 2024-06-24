@@ -1,23 +1,28 @@
+"""
+This is a partial copy of `ste_io.py` obtained on 2024-06-24 from the `https://github.com/birgander2/PyRAT` repository.
+The original code is licensed under the MPL-2.0 license.
+
+The following module provides the possibility to work with ``RAT`` files, widely
+used by DLR-HR institute and some others.
+
+:author: Andreas Reigber <andreas.reigber@dlr.de>
+:author: Anton Heister <anton.heister@dlr.de>
 
 """
-Partial copy of lib_io.py from https://gitlab.dlr.de/hr-rko-ir-pol-insar/common_code
-More recent version can be found in https://gitlab.dlr.de/hr-stetools/stetools/-/blob/master/STEtools/ste_io.py
-A free copy of ste_io.py is also available from the DLR HR "F-SAR Data Formats" website:
-https://www.dlr.de/hr/desktopdefault.aspx/tabid-2326/3776_read-48006
-"""
 
-################# PART FOR RAT FILES from STEEtools #################################
-
-from functools import reduce
 import ctypes
 import os
+
 import numpy as np
-import warnings
 import mmap
 from functools import reduce
 
+import warnings
+
+
 red = "\033[91m"
 endc = "\033[0m"
+
 
 def rrat(filename, **kwargs):
     """Read an entire RAT file, return it as a numpy array."""
@@ -38,7 +43,6 @@ def srat(filename, array, **kwargs):
     """Write a numpy ndarray into a RAT file."""
     rat_file = RatFile(filename)
     rat_file.write(array, **kwargs)
-
 
 class RatHeaderRat(ctypes.Structure):
     """
@@ -70,7 +74,7 @@ class RatHeaderRat(ctypes.Structure):
       determining the value of ``ndim`` and ``nchannel`` parameters is given to
       ``shape`` parameter. That means that ``ndim`` is calculated as
       ``len(shape)`` and ``nchannel`` can be given as ``**kwargs``, if not given
-      then it is equal either to ``shape[-1]`` if ``ndim > 2`` or to ``0`` if
+      then it is equal either to ``product(shape[2::])``  if ``ndim > 2`` or to ``1`` if
       ``ndim < 2``.
     """
     _pack_ = 1
@@ -78,11 +82,12 @@ class RatHeaderRat(ctypes.Structure):
                 ("version", ctypes.c_float),
                 ("ndim", ctypes.c_int),
                 ("nchannel", ctypes.c_int),
-                ("shape", ctypes.c_int * 8),
+                ("idl_shape", ctypes.c_int * 8),
                 ("var", ctypes.c_int),
                 ("sub", ctypes.c_int * 2),
                 ("rattype", ctypes.c_int),
                 ("reserved", ctypes.c_int * 9)]
+
 
     def __init__(self, **kwargs):
         """Create an object of RatHeaderRat class.
@@ -97,6 +102,8 @@ class RatHeaderRat(ctypes.Structure):
         keyword according to IDL's regulations.
 
         **Keywords**:
+          :param array: a numpy array which is used to define/override ``shape`` and ``dtype``.
+          :type shape: list
           :param shape: a shape of a ``RAT`` file.
           :type shape: list
           :param ndim: number of dimensions, if not given, then parsed from
@@ -117,12 +124,17 @@ class RatHeaderRat(ctypes.Structure):
           :type rattype: int
 
         """
+
+        if 'array' in kwargs:
+            kwargs['shape'] = kwargs['array'].shape
+            kwargs['dtype'] = kwargs['array'].dtype
+
         self.magiclong = 844382546
         self.version = 2.0
         # checking kwargs
         if 'shape' in kwargs:
             # reverse the shape so it corresponds to RAT convention
-            self.shape = (ctypes.c_int * 8)(*kwargs['shape'][::-1])
+            self.idl_shape = (ctypes.c_int * 8)(*kwargs['shape'][::-1])
             if 'ndim' in kwargs:
                 self.ndim = ctypes.c_int(kwargs['ndim'])
             else:
@@ -132,9 +144,11 @@ class RatHeaderRat(ctypes.Structure):
                 self.nchannel = ctypes.c_int(kwargs['nchannel'])
             else:
                 if len(kwargs['shape']) <= 2:
-                    self.nchannel = ctypes.c_int(0)
+                #    self.nchannel = ctypes.c_int(0)
+                    self.nchannel = ctypes.c_int(1)
                 else:
-                    self.nchannel = ctypes.c_int(kwargs['shape'][-1])
+                #    self.nchannel = ctypes.c_int(kwargs['shape'][-1])
+                    self.nchannel = ctypes.c_int(np.product(kwargs['shape'][2::]))
         if 'var' in kwargs:
             self.var = ctypes.c_int(kwargs['var'])
         if 'rattype' in kwargs:
@@ -291,14 +305,24 @@ class RatFile():
         self.Header = RatHeader()
         # the shape of numpy array
         self.shape = ()
-        if os.path.exists(self.filename):
+        try:
             self.version, self.xdrflag = self.get_version()
             self.read_header()
             self.shape = self._get_shape()
+            self.ndim = len(self.shape)
             self.dtype = self._get_dtype()
+            self.info = self.Header.Info.info.decode()
+            self.var = int(self.Header.Rat.var)
+            self.nchannel = int(self.Header.Rat.nchannel)
             self.exists = True
-        else:
+        except (IOError, IndexError):
             self.exists = False
+
+
+    @classmethod
+    def _ioerror(cls, msg):
+        print(red + msg + endc)
+        raise IOError(msg)
 
     def create(self, shape=None, header=None, **kwargs):
         """Create an empty ``RAT`` file and write a RAT header into it.
@@ -333,16 +357,13 @@ class RatFile():
         """
         # raise an error if neither header nor shape is given as an arg
         if (header is None) and (shape is None):
-            print(red + 'Please, specify either shape or header!' + endc)
-            raise IOError
+            self._ioerror('Please, specify either shape or header!')
 
         if header is not None:
             self.Header = header
-            self.shape = self._get_shape()
 
         if shape is not None:
-            self.Header.Rat.shape = (ctypes.c_int * 8)(*shape[::-1])
-            self.shape = tuple(shape)
+            self.Header.Rat.idl_shape = (ctypes.c_int * 8)(*shape[::-1])
 
         if 'dtype' in kwargs:
             if type(kwargs['dtype']) == type:
@@ -351,7 +372,10 @@ class RatFile():
                 data_type = kwargs['dtype']
             self.Header.Rat.var = get_var(data_type)
 
+        self.shape = self._get_shape()
         self.dtype = self._get_dtype()
+        self.Header.Rat.ndim = ctypes.c_int(len(self.shape))
+        self.Header.Rat.nchannel = ctypes.c_int(int(np.product(self.shape[2:])))
 
         if 'rattype' in kwargs:
             self.Header.Rat.rattype = ctypes.c_int(kwargs['rattype'])
@@ -362,9 +386,10 @@ class RatFile():
         # write the Header and truncate the file
         with open(self.filename, 'wb') as lun:
             lun.write(self.Header)
-            lun.truncate(n_bytes)
+            #lun.truncate(n_bytes)
             self.exists = True
-        return
+
+        return self
 
 
     def write(self, arr=[], **kwargs):
@@ -417,6 +442,11 @@ class RatFile():
         :raises: IOError
 
         """
+
+        arr = np.asarray(arr)
+        if arr.ndim == 0:
+            arr = arr.reshape(1)
+
         # block writing
         if 'block' in kwargs:
             # check if datatype of arr and of 'var' are the same
@@ -424,12 +454,11 @@ class RatFile():
 
             block = kwargs['block']
             # check if the block var meets the requirements
-            self._check_block(block, arr=arr)
+            block = self._check_block(block, arr=arr)
 
             if 'header' in kwargs:
-                print(red + 'The header should have been written prior to block '
-                            'writting!' + endc)
-                raise IOError
+                self._ioerror('The header should have been written prior to block '
+                              'writting!')
 
             # for 2D arrays an offset for both axes is allowed
             if arr.ndim == 2:
@@ -449,6 +478,7 @@ class RatFile():
                 # The header should be written prior block writting
                 lun.seek(offset)
                 arr.tofile(lun)
+                lun.flush()
                 self.exists = True
             return
 
@@ -458,7 +488,7 @@ class RatFile():
                 self.Header = kwargs['header']
                 # modify existing header if needed
                 if 'shape' in kwargs:
-                    self.Header.Rat.shape = (
+                    self.Header.Rat.idl_shape = (
                         ctypes.c_int * 8)(*kwargs['shape'][::-1])
                     self.shape = tuple(kwargs['shape'])
                 if 'dtype' in kwargs:
@@ -470,35 +500,37 @@ class RatFile():
                 if 'rattype' in kwargs:
                     self.Header.Rat.rattype = kwargs['rattype']
                 # check if datatypes of array and header are equal
-                if arr != []:
+                if arr.size > 0:
                     self._check_dtypes(arr)
 
-            elif arr != []:
+            elif arr.size > 0:
                 # parse array parameters to the Header
                 self.Header = RatHeader(
-                    shape=arr.shape,
+                    shape=(arr.shape if 'shape' not in kwargs else kwargs['shape']),
                     var=np.ctypeslib.array(get_var(arr.dtype)))
                 if 'rattype' in kwargs:
                     self.Header.Rat.rattype = kwargs['rattype']
 
             else:
-                print(red + "Specify a header, an array or both!" + endc)
-                raise IOError
+                self._ioerror('Specify a header, an array or both!')
 
             self.dtype = self._get_dtype()
             self.shape = self._get_shape()
+            self.Header.Rat.ndim = ctypes.c_int(len(self.shape))
+            self.Header.Rat.nchannel = ctypes.c_int(int(np.product(self.shape[2:])))
 
             n_bytes_total = (
             1000 + reduce(lambda x, y: x * y, self.shape) * self.dtype.itemsize)
 
             with open(self.filename, 'wb') as lun:
                 lun.write(self.Header)
-                if arr != []:
+                if arr.size > 0:
                     arr.tofile(lun)
                 self.exists = True
                 if lun.tell() > n_bytes_total:
                     warnings.warn("The size of the RAT file exceed! The array "
                                   "is written outside the header's dimensions!")
+                lun.flush()
             return
     # --------------------------------------------------------------------------
     def read(self, **kwargs):
@@ -519,14 +551,13 @@ class RatFile():
           ``RAT`` header.
         """
         if self.exists == False:
-            print(red + "ERROR: The file is not found" + endc)
-            raise IOError
+            self._ioerror('ERROR: The file "%s" does not exist'%self.filename)
         if 'block' in kwargs:
             block = kwargs['block']
             # check if the block var meets the requirements
-            self._check_block(block)
+            block = self._check_block(block)
         else:
-            block = np.zeros(2 * len(self.shape), dtype=np.int64)
+            block = np.zeros(2 * len(self.shape), dtype=np.int)
             block[1::2] = self.shape
 
         ind = tuple(map(
@@ -537,8 +568,7 @@ class RatFile():
         elif self.version == 1.0:
             offset = int(104 + 4 * self.Header.Rat.ndim + 4 * self.xdrflag)
         else:
-            print(red + "ERROR: RAT version not supported" + endc)
-            raise IOError
+            self._ioerror('ERROR: RAT version not supported')
 
         with open(self.filename, 'rb') as lun:
             mm = mmap.mmap(
@@ -572,14 +602,13 @@ class RatFile():
           ``RAT`` header.
         """
         if self.exists == False:
-            print(red + "ERROR: The file is not found" + endc)
-            raise IOError
+            self._ioerror('ERROR: The file is not found')
         if 'block' in kwargs:
             block = kwargs['block']
             # check if the block var meets the requirements
-            self._check_block(block)
+            block = self._check_block(block)
         else:
-            block = np.zeros(2 * len(self.shape), dtype=np.int64)
+            block = np.zeros(2 * len(self.shape), dtype=np.int)
             block[1::2] = self.shape
 
         ind = tuple(map(
@@ -590,8 +619,7 @@ class RatFile():
         elif self.version == 1.0:
             offset = int(104 + 4 * self.Header.Rat.ndim + 4 * self.xdrflag)
         else:
-            print(red + "ERROR: RAT version not supported" + endc)
-            raise IOError
+            self._ioerror('ERROR: RAT version not supported')
 
         with open(self.filename, 'rb') as lun:
             mm = mmap.mmap(
@@ -615,19 +643,23 @@ class RatFile():
         # check if datatype of arr and of 'var' are the same
         self._check_dtypes(arr)
 
+        if arr.ndim == len(self.shape)-1:
+            arr = arr[np.newaxis,...]
+
         # check if the array's and header's shape correspond to each other
-        if len(self.shape) > 1 and (self.shape[1::] != arr.shape):
-            print(red + "The shape specified in the header and the shape of "
-                        "the array don't correspond to each other!" + endc)
-            raise IOError
+        if len(self.shape) > 1 and (self.shape[1:] != arr.shape[1:]):
+            self._ioerror('The shape specified in the header %s and the shape of '
+                          'the array %s don\'t correspond to each other!' % (str(self.shape[1:]),str(arr.shape[1:])))
 
         n_bytes_total = 1000 + reduce(lambda x, y: x * y, self.shape) * arr.itemsize
 
-        with open(self.filename, 'ab') as lun:
+        with open(self.filename, 'r+b') as lun:
+            lun.seek(0,2)
             arr.tofile(lun)
             if lun.tell() > n_bytes_total:
                 warnings.warn("The size of the RAT file exceed! The array is "
                               "written outside the header's dimensions!")
+
         return
 
 
@@ -650,10 +682,11 @@ class RatFile():
                 offset = 3 * 4
 
             with open(self.filename, 'rb') as lun:
-                ndim = np.fromfile(file=lun, dtype=data_type, count=1)
-                shape = np.fromfile(file=lun, dtype=data_type, count=ndim)
-                var = np.fromfile(file=lun, dtype=data_type, count=1)
-                rattype = np.fromfile(file=lun, dtype=data_type, count=1)
+                ndim = int(np.fromfile(file=lun, dtype=data_type, count=1))
+                shape = np.fromfile(file=lun, dtype=data_type, count=ndim).tolist()
+                shape = shape[::-1]  
+                var = int(np.fromfile(file=lun, dtype=data_type, count=1))
+                rattype = int(np.fromfile(file=lun, dtype=data_type, count=1))
                 lun.seek(offset, 1)
                 info = np.fromfile(file=lun, dtype="B", count=80).tostring().rstrip()
 
@@ -663,10 +696,29 @@ class RatFile():
             self.Header.Info.info = info
 
         else:
-            print(red + "ERROR: RAT version not supported" + endc)
-            raise IOError
+            self._ioerror('ERROR: RAT version not supported')
 
         self.dtype = self._get_dtype()
+
+    #--------------------------------------------------------------------------
+
+    def write_envi_header(self, info='', sensorType='DLR F-SAR'):
+        hdrFile = self.filename+'.hdr'
+        with open(hdrFile,'w') as f:
+            f.write('ENVI\n')
+            if (len(info) > 0):
+                f.write('description     = {%s}\n' % info)
+            f.write('samples         = %i\n' % self.Header.Rat.idl_shape[0])
+            f.write('lines           = %i\n' % self.Header.Rat.idl_shape[1])
+            f.write('bands           = %i\n' % np.maximum(self.Header.Rat.nchannel,1))
+            f.write('header offset   = 1000\n')
+            f.write('file type       = ENVI Standard\n')
+            f.write('data type       = %i\n' % self.Header.Rat.var)
+            f.write('interleave      = bsq\n')
+            f.write('byte order      = 0\n')
+            if (len(sensorType) > 0):
+                f.write('sensor type     = %s\n' % sensorType)
+
 
     #--------------------------------------------------------------------------
 
@@ -715,59 +767,72 @@ class RatFile():
         return version, xdrflag
 
     def _check_block(self, block, **kwargs):
+        if len(block) == 4:                        # only 2D block provided
+            block = list(block)
+            dimlist = list(self.shape)
+            dimlist[dimlist.index(max(dimlist))] = 0
+            dimlist[dimlist.index(max(dimlist))] = 0
+            for k, dim in enumerate(dimlist):
+                if dim != 0:
+                    block.insert(k*2, dim)
+                    block.insert(k*2, 0)
+
         stop_more_than_shape = reduce(lambda x, y: x or y, (
             map(lambda x, y: (x > y), block[1::2], self.shape)))
         if stop_more_than_shape:
-            print(red + 'Value of block exceeds '
-                        'the array shape!' + endc)
-            raise IOError
+            self._ioerror('Value of block exceeds the array shape!')
 
-        block_is_negative = any(
-            [((i < 0) or (type(i) != int)) for i in block] )
-        if block_is_negative:
-            print(red + 'The items in block should be nonnegative integers!' + endc)
-            raise IOError
+        block = np.asarray(block)
+        if block.dtype.kind not in ('i','u'):
+            self._ioerror('Block extent must be given by integers!')
+
+        if np.min(block) < 0:
+            self._ioerror('The items in block must be nonnegative!')
 
         if 'arr' in kwargs:
             if len(block) // 2 != kwargs['arr'].ndim:
-                print(red + 'The dimensions of block do not correspond to the '
-                            'dimensions of array!' + endc)
-                raise IOError
+                self._ioerror('The dimensions of block do not correspond to the '
+                              'dimensions of array!')
 
             block_not_shape = reduce(lambda x, y: x or y,
                                      map(lambda x, y, z: (x - y) != z,
                                          block[1::2], block[::2],
                                          kwargs['arr'].shape))
             if block_not_shape:
-                print(red + 'Lenght of block components does not correspond to'
-                            ' the shape of the array!' + endc)
-                raise IOError
+                self._ioerror('Length of block components %s does not correspond to'
+                              ' the shape of the array %s!'%(str(block),str(kwargs['arr'].shape)))
+        return block
 
 
     def _check_dtypes(self, arr):
-        """Check if dtypes of given array and the one in header are the equal"""
+        """Check if dtypes of given array and the one in header are equal"""
         if self.Header.Rat.var != get_var(arr.dtype).value:
-            print(red + "The data type of the array to be written and "
-                        "the one specified in file's header"
-                         "don't correspond to each other!" + endc)
-            raise IOError
+            self._ioerror('The data type of the array to be written and '
+                          'the one specified in file\'s header '
+                          'don\'t correspond to each other!')
 
     def _get_dtype(self):
         """Get data type give ```Header.Rat.var``."""
         try:
             return np.dtype(dtype_dict[self.Header.Rat.var])
         except KeyError:
-            print(red + "The data type is either not specified or "
-                        "not supported!" + endc)
-            raise IOError
+            self._ioerror('The data type is either not specified or '
+                          'not supported!')
 
     def _get_shape(self):
         """Get numpy array shape from ``Header.Rat.shape`` that is IDL style"""
-        shape = np.ctypeslib.as_array(self.Header.Rat.shape)
-        # NOTE: Bug solved!?! Use ndim instead of values != 0 to get dims!?!?
-        #shape = shape[shape != 0]
-        shape= shape[0:self.Header.Rat.ndim]
+        shape = np.ctypeslib.as_array(self.Header.Rat.idl_shape)
+        shape = shape[shape != 0]
         return tuple(shape[::-1])
+
+
+def check_ratformat(filename):
+    with open(filename, 'rb') as lun:
+        magiclong = lun.read(4)
+        if magiclong == b'RAT2':
+            return True
+        else:
+            return False
 
 
 def get_var(dtype):
@@ -775,8 +840,7 @@ def get_var(dtype):
     var = [key for (key, value) in dtype_dict.items() if
            value == dtype]
     if var == []:
-        print(red + 'The data type is not supported!' + endc)
-        raise IOError
+        RatFile._ioerror('The data type is not supported!')
     else:
         return ctypes.c_int(var[0])
 

@@ -1,5 +1,6 @@
 import pathlib
-from fsarcamp import campaign_utils, rat_io, fsar_lut
+import fsarcamp as fc
+from fsarcamp import campaign_utils
 
 class CROPEX14Campaign:
     def __init__(self, campaign_folder):
@@ -86,7 +87,7 @@ class CROPEX14Pass:
         Load SLC in specified polarization ("hh", "hv", "vh", "vv") from the RGI folder.
         """
         pass_folder = self._get_pass_try_folder()
-        return rat_io.mrrat(pass_folder / "RGI" / "RGI-SR" / f"slc_{self.pass_name}_{self.band}{pol}_t01.rat")
+        return fc.mrrat(pass_folder / "RGI" / "RGI-SR" / f"slc_{self.pass_name}_{self.band}{pol}_t01.rat")
 
     def load_rgi_incidence(self, pol=None):
         """
@@ -94,7 +95,7 @@ class CROPEX14Pass:
         Polarization is ignored for the CROPEX 14 campaign.
         """
         pass_folder = self._get_pass_try_folder()
-        return rat_io.mrrat(pass_folder / "RGI" / "RGI-SR"/ f"incidence_{self.pass_name}_{self.band}_t01.rat")
+        return fc.mrrat(pass_folder / "RGI" / "RGI-SR"/ f"incidence_{self.pass_name}_{self.band}_t01.rat")
 
     def load_rgi_params(self, pol="hh"):
         """
@@ -110,7 +111,7 @@ class CROPEX14Pass:
         Load coregistered SLC in specified polarization ("hh", "hv", "vh", "vv") from the INF folder.
         """
         pass_folder = self._get_pass_try_folder()
-        return rat_io.mrrat(pass_folder / "INF" / "INF-SR" / f"slc_coreg_{self.master_name}_{self.pass_name}_{self.band}{pol}_t01.rat")
+        return fc.mrrat(pass_folder / "INF" / "INF-SR" / f"slc_coreg_{self.master_name}_{self.pass_name}_{self.band}{pol}_t01.rat")
 
     def load_inf_pha_dem(self, pol=None):
         """
@@ -119,7 +120,7 @@ class CROPEX14Pass:
         This is equivalent of subtracting the phase from the interferogram.
         """
         pass_folder = self._get_pass_try_folder()
-        return rat_io.mrrat(pass_folder / "INF" / "INF-SR" / f"pha_dem_{self.master_name}_{self.pass_name}_{self.band}{pol}_t01.rat")
+        return fc.mrrat(pass_folder / "INF" / "INF-SR" / f"pha_dem_{self.master_name}_{self.pass_name}_{self.band}{pol}_t01.rat")
 
     def load_inf_pha_fe(self, pol=None):
         """
@@ -127,14 +128,14 @@ class CROPEX14Pass:
         The residual can be used to correct the phase of the coregistered SLCs: coreg_slc * np.exp(1j * phase)
         """
         pass_folder = self._get_pass_try_folder()
-        return rat_io.mrrat(pass_folder / "INF" / "INF-SR" / f"pha_fe_{self.master_name}_{self.pass_name}_{self.band}{pol}_t01.rat")
+        return fc.mrrat(pass_folder / "INF" / "INF-SR" / f"pha_fe_{self.master_name}_{self.pass_name}_{self.band}{pol}_t01.rat")
 
     def load_inf_kz(self, pol):
         """
         Load interferometric kz.
         """
         pass_folder = self._get_pass_try_folder()
-        return rat_io.mrrat(pass_folder / "INF" / "INF-SR" / f"kz_{self.master_name}_{self.pass_name}_{self.band}{pol}_t01.rat")
+        return fc.mrrat(pass_folder / "INF" / "INF-SR" / f"kz_{self.master_name}_{self.pass_name}_{self.band}{pol}_t01.rat")
 
     def load_inf_params(self, pol="hh"):
         """
@@ -156,7 +157,7 @@ class CROPEX14Pass:
         pass_folder = self._get_pass_try_folder()
         fname_lut_az = pass_folder / "GTC" / "GTC-LUT" / f"sr2geo_az_{self.pass_name}_{self.band}_t01.rat"
         fname_lut_rg = pass_folder / "GTC" / "GTC-LUT" / f"sr2geo_rg_{self.pass_name}_{self.band}_t01.rat"
-        return fsar_lut.NorthingEastingToAzimuthRangeLUT(fname_lut_az, fname_lut_rg)
+        return fc.NorthingEastingToAzimuthRangeLUT(fname_lut_az, fname_lut_rg)
 
     # Helpers
 

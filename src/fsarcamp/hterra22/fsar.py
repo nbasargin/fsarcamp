@@ -1,5 +1,6 @@
 import pathlib
-from fsarcamp import campaign_utils, rat_io, fsar_lut
+import fsarcamp as fc
+from fsarcamp import campaign_utils
 
 class HTERRA22Campaign:
     def __init__(self, campaign_folder):
@@ -51,7 +52,7 @@ class HTERRA22Pass:
         Load SLC in specified polarization ("hh", "hv", "vh", "vv") from the RGI folder.
         """
         rgi_folder, inf_folder, gtc_folder, try_suffix = self._get_path_parts()
-        return rat_io.mrrat(rgi_folder / "RGI-SR" / f"slc_{self.pass_name}_{self.band}{pol}_{try_suffix}.rat")
+        return fc.mrrat(rgi_folder / "RGI-SR" / f"slc_{self.pass_name}_{self.band}{pol}_{try_suffix}.rat")
 
     def load_rgi_incidence(self, pol=None):
         """
@@ -59,7 +60,7 @@ class HTERRA22Pass:
         Polarization is ignored for the HTERRA 22 campaign.
         """
         rgi_folder, inf_folder, gtc_folder, try_suffix = self._get_path_parts()
-        return rat_io.mrrat(rgi_folder / "RGI-SR"/ f"incidence_{self.pass_name}_{self.band}_{try_suffix}.rat")
+        return fc.mrrat(rgi_folder / "RGI-SR"/ f"incidence_{self.pass_name}_{self.band}_{try_suffix}.rat")
 
     def load_rgi_params(self, pol="hh"):
         """
@@ -75,7 +76,7 @@ class HTERRA22Pass:
         Load coregistered SLC in specified polarization ("hh", "hv", "vh", "vv") from the INF folder.
         """
         rgi_folder, inf_folder, gtc_folder, try_suffix = self._get_path_parts()
-        return rat_io.mrrat(inf_folder / "INF-SR" / f"slc_coreg_{self.master_name}_{self.pass_name}_{self.band}{pol}_{try_suffix}.rat")
+        return fc.mrrat(inf_folder / "INF-SR" / f"slc_coreg_{self.master_name}_{self.pass_name}_{self.band}{pol}_{try_suffix}.rat")
 
     def load_inf_pha_dem(self, pol=None):
         """
@@ -85,7 +86,7 @@ class HTERRA22Pass:
         Polarization is ignored for the HTERRA 22 campaign.
         """
         rgi_folder, inf_folder, gtc_folder, try_suffix = self._get_path_parts()
-        return rat_io.mrrat(inf_folder / "INF-SR" / f"pha_dem_{self.master_name}_{self.pass_name}_{self.band}_{try_suffix}.rat")
+        return fc.mrrat(inf_folder / "INF-SR" / f"pha_dem_{self.master_name}_{self.pass_name}_{self.band}_{try_suffix}.rat")
 
     def load_inf_pha_fe(self, pol=None):
         """
@@ -94,14 +95,14 @@ class HTERRA22Pass:
         Polarization is ignored for the HTERRA 22 campaign.
         """
         rgi_folder, inf_folder, gtc_folder, try_suffix = self._get_path_parts()
-        return rat_io.mrrat(inf_folder / "INF-SR" / f"pha_fe_{self.master_name}_{self.pass_name}_{self.band}_{try_suffix}.rat")
+        return fc.mrrat(inf_folder / "INF-SR" / f"pha_fe_{self.master_name}_{self.pass_name}_{self.band}_{try_suffix}.rat")
 
     def load_inf_kz(self, pol):
         """
         Load interferometric kz.
         """
         rgi_folder, inf_folder, gtc_folder, try_suffix = self._get_path_parts()
-        return rat_io.mrrat(inf_folder / "INF-SR" / f"kz_{self.master_name}_{self.pass_name}_{self.band}{pol}_{try_suffix}.rat")
+        return fc.mrrat(inf_folder / "INF-SR" / f"kz_{self.master_name}_{self.pass_name}_{self.band}{pol}_{try_suffix}.rat")
 
     def load_inf_params(self, pol="hh"):
         """
@@ -123,7 +124,7 @@ class HTERRA22Pass:
         rgi_folder, inf_folder, gtc_folder, try_suffix = self._get_path_parts()
         fname_lut_az = gtc_folder / "GTC-LUT" / f"sr2geo_az_22hterra0104_{self.band}_{try_suffix}.rat"
         fname_lut_rg = gtc_folder / "GTC-LUT" / f"sr2geo_rg_22hterra0104_{self.band}_{try_suffix}.rat"
-        return fsar_lut.NorthingEastingToAzimuthRangeLUT(fname_lut_az, fname_lut_rg)
+        return fc.NorthingEastingToAzimuthRangeLUT(fname_lut_az, fname_lut_rg)
 
     # Helpers
 

@@ -4,8 +4,6 @@ F-SAR lookup table for geocoding between Azimuth-Range and Northing-Easting geo 
 import numpy as np
 import pyproj
 import fsarcamp as fc
-import fsarcamp.cropex14 as cr14
-from fsarcamp.rat_io import RatFile
 
 class NorthingEastingToAzimuthRangeLUT:
     """
@@ -19,8 +17,8 @@ class NorthingEastingToAzimuthRangeLUT:
             path_lut_rg - path to the range lookup table (RAT file)
         """
         # read lookup tables
-        f_az = RatFile(path_lut_az)
-        f_rg = RatFile(path_lut_rg)
+        f_az = fc.RatFile(path_lut_az)
+        f_rg = fc.RatFile(path_lut_rg)
         # in the RAT file northing (first axis) is decreasing, and easting (second axis) is increasing
         # use flipud on northing to make both axes consistent: increasing index increases northing / easting
         self.lut_az = np.flipud(f_az.mread()) # reading with memory map: fast and read-only
