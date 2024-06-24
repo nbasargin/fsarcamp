@@ -1,6 +1,6 @@
 # F-SAR campaigns package
 
-The main purpose of this package is to provide a convenient way to load the data of different F-SAR campaigns, including F-SAR radar data (e.g. SLC, incidence), geocoding look-up tables (LUT), and campaign ground measurements (if available).
+The main purpose of this package is to provide a convenient way to load the data of different F-SAR campaigns, including F-SAR radar data (e.g. SLC, incidence), geocoding lookup tables (LUT), and campaign ground measurements (if available).
 
 ## Editable installation
 - Clone this repository to your machine.
@@ -29,8 +29,10 @@ X-, C-, and L-band are available, some dates have several baselines allowing  to
 Several fields have been monitored during the campaign.
 The measurement include crop height, water content, biomass, and soil moisture.
 
-! Data loaders are planned to be implemented !
-
+Following data loaders are currently supported:
+- `CROPEX14Campaign`: F-SAR data loader (SLC, incidence, lookup tables, etc.)
+- `CROPEX14Moisture`: Point-wise soil moisture ground measurements collected by the ground teams over specific fields
+- `CROPEX14FieldMap`: Field polygons and crop types
 
 ### HTERRA 2022
 
@@ -46,14 +48,7 @@ This package defines following constants:
 - 8 time periods correponding to the flights
 - several region names that cover specific fields + region extent in SLC and LUT coordinates
 
-This package provides following data loaders for ground measurements:
-- `HTERRA22Moisture` loads soil moisture point measurements collected by the ground teams over specific fields
-- `HTERRA22MoistureInterpolated` loads and interpolates point measurements to a raster in SLC or LUT coordinates
-
-
-## License
-
-Most of the code in this repository is open (MIT license).
-
-Some source files have been obtained from other repositories, e.g. `https://gitlab.dlr.de/hr-stetools/stetools` and `https://gitlab.dlr.de/hr-rko-ir-pol-insar/common_code`.
-The origin of third-party code is explicitly stated in the docstrings, refer to the original repository for the license.
+Following data loaders are currently supported:
+- `HTERRA22Campaign`: F-SAR data loader (SLC, incidence, lookup tables, etc.)
+- `HTERRA22Moisture`: Point-wise soil moisture ground measurements collected by the ground teams over specific fields
+- `HTERRA22MoistureInterpolated`: Interpolation of soil moisture ground measurements to a raster in SLC or LUT coordinates
