@@ -1,7 +1,7 @@
 """
 Data loaders for F-SAR campaigns, including:
 - F-SAR radar data (e.g. SLC, incidence)
-- geocoding look-up tables (LUT)
+- geocoding lookup tables (LUT)
 - campaign ground measurements (if available)
 """
 # Re-exporting internal functionality
