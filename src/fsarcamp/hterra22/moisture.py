@@ -286,8 +286,8 @@ class HTERRA22Moisture:
                 "field" - indicates the field where the point was taken (including the field stripe)
                 "longitude", "latitude" - geographical coordinates
                 "soil_moisture" - calibrated soil moisture at that poition, value ranges from 0 to 1
-            If band and pass_name are provided, additionals columns are added:
-                "northing", "easting" - geographical coordinates in the LUT coordinate system (UTM zone 33)
+            If band is provided, additionals columns are added:
+                "northing", "easting" - geographical coordinates in the LUT projection (UTM zone 33)
                 "azimuth", "range" - pixel coordinates within the SLC
         """
         # read all points
