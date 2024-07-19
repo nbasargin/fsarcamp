@@ -822,7 +822,8 @@ class RatFile():
     def _get_shape(self):
         """Get numpy array shape from ``Header.Rat.shape`` that is IDL style"""
         shape = np.ctypeslib.as_array(self.Header.Rat.idl_shape)
-        shape = shape[shape != 0]
+        # shape = shape[shape != 0] # version from PyRAT, fails for some files
+        shape = shape[0:self.Header.Rat.ndim]
         return tuple(shape[::-1])
 
 
