@@ -129,7 +129,34 @@ class CROPEX14FieldMap:
                 poly_range_azimuth = gpd.GeoSeries(slc_poly_list), # SLC pixel indices, azimuth range
             )
         return processed_df
-    
+
+    def load_field_by_id(self, field_id, pass_name=None, band=None):
+        """
+        Load a field by ID. Returns a dataframe with the same columns as `load_fields`.
+        Most fields are defined by a single polygon but some have multiple.
+        """
+        fields = self.load_fields(pass_name, band)
+        # look up field polygons that contain specific points
+        points_on_field = {
+            cr14.CORN_C1: [(12.874096, 48.694220), (12.875333, 48.694533)],
+            cr14.CORN_C1_CENTER: [(12.874096, 48.694220)],
+            cr14.CORN_C2: [(12.873469, 48.696072)],
+            cr14.CORN_C3: [(12.875444, 48.697499)],
+            cr14.CORN_C5: [(12.872011, 48.702637)],
+            cr14.CORN_C6: [(12.869678, 48.703700)],
+            cr14.WHEAT_W1: [(12.877348, 48.697276)],
+            cr14.WHEAT_W2: [(12.873871, 48.700504)],
+            cr14.WHEAT_W4: [(12.863705, 48.701121)],
+            cr14.WHEAT_W5: [(12.868541, 48.701644)],
+            cr14.WHEAT_W7: [(12.863067, 48.697123)],
+            cr14.WHEAT_W10: [(12.854872, 48.690192)],
+            cr14.BARLEY_B1: [(12.874718, 48.698977)],
+            cr14.RAPESEED_R1: [(12.868209, 48.687849)],
+            cr14.SUGAR_BEET_SB2: [(12.8630, 48.6947)],
+        }[field_id]
+        filtered_fields = [fields[fields["poly_longitude_latitude"].contains(shapely.Point(point))] for point in points_on_field]
+        return pd.concat(filtered_fields)
+
     def _create_field_raster(self, field_df: gpd.GeoDataFrame, data_column_name, geometry_column_name, out_shape, invalid_value):
         """
         Rasterize field data (in the `data_column_name` column) to field geometry (in the `geometry_column_name` column).

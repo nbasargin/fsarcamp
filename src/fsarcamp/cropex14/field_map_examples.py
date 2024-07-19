@@ -14,9 +14,20 @@ def example_filter_fields_by_long_lat():
     pass_name, band = "14cropex0203", "C"
     fields = field_map.load_fields(pass_name, band)
     # filter field by longitude, latitude
-    longitude, latitude = cr14.field_id_to_long_lat_point(cr14.CORN_C2)
+    longitude, latitude = 12.873469, 48.696072
     point = shapely.Point(longitude, latitude)
     fields = fields[fields["poly_longitude_latitude"].contains(point)]
+    print(fields)
+
+def example_load_field_by_id():
+    """
+    Look up a field by ID.
+    """
+    shapefile_path = fc.get_polinsar_folder() / "Ground_truth/Wallerfing_campaign_May_August_2014/kmz-files/Land_use_Wallerfing_2014_shp+kmz/flugstreifen_wallerfing_feka2014.dbf"
+    campaign = cr14.CROPEX14Campaign(fc.get_polinsar_folder() / "01_projects/CROPEX/CROPEX14")
+    field_map = cr14.CROPEX14FieldMap(shapefile_path, campaign)
+    pass_name, band = "14cropex0203", "C"
+    fields = field_map.load_field_by_id(cr14.CORN_C2, pass_name, band)
     print(fields)
 
 def example_crop_mask_raster():
