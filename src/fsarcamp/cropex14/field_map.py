@@ -70,6 +70,10 @@ class CROPEX14FieldMap:
         }
 
     def _translate_to_lut_indices(self, easting_northing_shape, lut: fc.Geo2SlantRange):
+        """
+        Translate a shape in easting northing coordinates to the LUT frame of refence to get the pixel indices.
+        Pixel spacing is 1 meter for the CROPEX14 campaign, no scaling is therefore needed.
+        """
         easting_northing_lut_shape = shapely.affinity.translate(easting_northing_shape, xoff=-lut.min_east, yoff=-lut.min_north)
         minx, miny, maxx, maxy = easting_northing_lut_shape.bounds
         lut_northing_max, lut_easting_max = lut.lut_az.shape
@@ -107,6 +111,24 @@ class CROPEX14FieldMap:
         else:
             raise RuntimeError(f"Unknown geometry type: {lut_shape.geom_type}")
 
+    def _geocode_dataframe(self, field_df, pass_name, band):
+        """
+        Geocode all fields in the dataframe to LUT and SLC coordinates.
+        Field geometry is taken from the "poly_easting_northing" column.
+        Two new columns are added: "poly_easting_northing_lut" and "poly_range_azimuth".
+        """
+        fsar_pass = self.cropex14campaign.get_pass(pass_name, band)
+        lut = fsar_pass.load_gtc_sr2geo_lut()
+        # translate each polygon to the LUT indices, then to SLC indices
+        poly_e_n = field_df["poly_easting_northing"]
+        poly_e_n_lut = [self._translate_to_lut_indices(en_poly, lut) for en_poly in poly_e_n.to_list()]
+        poly_rg_az = [self._geocode_shape(lut_poly, lut) for lut_poly in poly_e_n_lut]
+        geocoded_df = field_df.assign(
+            poly_easting_northing_lut = gpd.GeoSeries(poly_e_n_lut, index=field_df.index), # LUT pixel indices, easting northing
+            poly_range_azimuth = gpd.GeoSeries(poly_rg_az, index=field_df.index), # SLC pixel indices, azimuth range
+        )
+        return geocoded_df
+
     def load_fields(self, pass_name=None, band=None):
         gdf = gpd.read_file(self.shapefile_path)
         poly_shapefile = gpd.GeoSeries(shapely.force_2d(gdf.geometry), crs=gdf.crs) # EPSG:31468 (3-degree Gauss-Kruger zone 4)
@@ -125,25 +147,16 @@ class CROPEX14FieldMap:
             "poly_longitude_latitude": poly_long_lat, # longitude latitude
             "poly_easting_northing": poly_e_n, # LUT easting northing (UTM zone 33N)
         })
-        if band is not None and pass_name is not None:
-            # create field polygons in LUT and SLC pixel coordinates
-            fsar_pass = self.cropex14campaign.get_pass(pass_name, band)
-            lut = fsar_pass.load_gtc_sr2geo_lut()
-            # translate each polygon to the LUT indices, then to SLC indices
-            poly_e_n_lut = [self._translate_to_lut_indices(en_poly, lut) for en_poly in poly_e_n.to_list()]
-            poly_rg_az = [self._geocode_shape(lut_poly, lut) for lut_poly in poly_e_n_lut]
-            processed_df = processed_df.assign(
-                poly_easting_northing_lut = gpd.GeoSeries(poly_e_n_lut), # LUT pixel indices, easting northing
-                poly_range_azimuth = gpd.GeoSeries(poly_rg_az), # SLC pixel indices, azimuth range
-            )
-        return processed_df
+        if band is None or pass_name is None:
+            return processed_df
+        return self._geocode_dataframe(processed_df, pass_name, band)
 
     def load_field_by_id(self, field_id, pass_name=None, band=None):
         """
         Load a field by ID. Returns a dataframe with the same columns as `load_fields`.
         Most fields are defined by a single polygon but some have multiple.
         """
-        fields = self.load_fields(pass_name, band)
+        fields = self.load_fields()
         # look up field polygons that contain specific points
         points_on_field = {
             cr14.CORN_C1: [(12.874096, 48.694220), (12.875333, 48.694533)],
@@ -162,8 +175,10 @@ class CROPEX14FieldMap:
             cr14.RAPESEED_R1: [(12.868209, 48.687849)],
             cr14.SUGAR_BEET_SB2: [(12.8630, 48.6947)],
         }[field_id]
-        filtered_fields = [fields[fields["poly_longitude_latitude"].contains(shapely.Point(point))] for point in points_on_field]
-        return pd.concat(filtered_fields)
+        filtered_fields = pd.concat([fields[fields["poly_longitude_latitude"].contains(shapely.Point(point))] for point in points_on_field])
+        if band is None or pass_name is None:
+            return filtered_fields
+        return self._geocode_dataframe(filtered_fields, pass_name, band)
 
     def _create_field_raster(self, field_df: gpd.GeoDataFrame, data_column_name, geometry_column_name, out_shape, invalid_value):
         """
