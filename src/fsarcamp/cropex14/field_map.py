@@ -7,6 +7,7 @@ import pandas as pd
 import geopandas as gpd
 import shapely
 from rasterio.features import rasterize
+import fsarcamp as fc 
 import fsarcamp.cropex14 as cr14
 
 class CROPEX14FieldMap:
@@ -68,40 +69,49 @@ class CROPEX14FieldMap:
             996: "Storage field", # Unbefestigte Mieten, Stroh-, Futter- und Dunglagerplätze (maximal ein Jahr) auf Ackerland
         }
 
-    def _geocode_shape(self, lut_shape, lut_az, lut_rg):
+    def _translate_to_lut_indices(self, easting_northing_shape, lut: fc.Geo2SlantRange):
+        easting_northing_lut_shape = shapely.affinity.translate(easting_northing_shape, xoff=-lut.min_east, yoff=-lut.min_north)
+        minx, miny, maxx, maxy = easting_northing_lut_shape.bounds
+        lut_northing_max, lut_easting_max = lut.lut_az.shape
+        shape_valid = (minx >= 0) & (miny >= 0) & (maxx < lut_easting_max - 1) & (maxy < lut_northing_max - 1)
+        if shape_valid:
+            return easting_northing_lut_shape
+        return None
+    
+    def _geocode_shape(self, lut_shape, lut: fc.Geo2SlantRange):
         """
         Geocode a polygon or a multi-polygon from LUT to SLC pixel indices.
         Coordinates for each polygon point are converted individually using the LUT.
         """
-        if lut_shape.geom_type == "MultiPolygon":
-            geocoded_polys = [self._geocode_shape(poly, lut_az, lut_rg) for poly in lut_shape.geoms]
+        if lut_shape is None:
+            return None
+        elif lut_shape.geom_type == "MultiPolygon":
+            geocoded_polys = [self._geocode_shape(poly, lut) for poly in lut_shape.geoms]
             valid_polys = [poly for poly in geocoded_polys if poly is not None]
             if len(valid_polys) == 0:
                 return None # no valid polygons
             return shapely.MultiPolygon(valid_polys)
         elif lut_shape.geom_type == "Polygon":
-            lut_northing_max, lut_easting_max = lut_az.shape
+            lut_northing_max, lut_easting_max = lut.lut_az.shape
             easting_lut, northing_lut = lut_shape.exterior.coords.xy
             lut_east_idx = np.rint(easting_lut).astype(np.int64)
             lut_north_idx = np.rint(northing_lut).astype(np.int64)
             invalid_indices = (lut_east_idx < 0) | (lut_east_idx >= lut_easting_max) | (lut_north_idx < 0) | (lut_north_idx >= lut_northing_max)
-            lut_east_idx[invalid_indices] = 0
-            lut_north_idx[invalid_indices] = 0
-            point_az = lut_az[lut_north_idx, lut_east_idx]
-            point_rg = lut_rg[lut_north_idx, lut_east_idx]
-            point_az[invalid_indices] = np.nan
-            point_rg[invalid_indices] = np.nan
-            if np.any(np.isnan(point_az)) or np.any(np.isnan(point_rg)):
-                return None # some points invalid
+            if np.any(invalid_indices):
+                return None # some points invalid: outside of LUT
+            point_az = lut.lut_az[lut_north_idx, lut_east_idx]
+            point_rg = lut.lut_rg[lut_north_idx, lut_east_idx]
+            if np.any(np.isnan(point_az)) or np.any(np.isnan(point_rg)) or np.any(point_az < 0) or np.any(point_rg < 0):
+                return None # some points invalid: outside of SLC
             return shapely.Polygon(np.stack((point_rg, point_az), axis=1))
         else:
             raise RuntimeError(f"Unknown geometry type: {lut_shape.geom_type}")
 
     def load_fields(self, pass_name=None, band=None):
         gdf = gpd.read_file(self.shapefile_path)
-        polygons_shapefile = gpd.GeoSeries(shapely.force_2d(gdf.geometry), crs=gdf.crs) # EPSG:31468 (3-degree Gauss-Kruger zone 4)
-        polygons_long_lat = polygons_shapefile.to_crs(4326) # EPSG:4326 (longitude - latitude)
-        polygons_easting_northing = polygons_shapefile.to_crs(32633) # EPSG:32633 (UTM zone 33N)        
+        poly_shapefile = gpd.GeoSeries(shapely.force_2d(gdf.geometry), crs=gdf.crs) # EPSG:31468 (3-degree Gauss-Kruger zone 4)
+        poly_long_lat = poly_shapefile.to_crs(4326) # EPSG:4326 (longitude - latitude)
+        poly_e_n = poly_shapefile.to_crs(32633) # EPSG:32633 (UTM zone 33N)        
         processed_df = gpd.GeoDataFrame({
             "num_crop_types": gdf["nu14_anz_n"], # number of different crop types on that field
             # crop code (defines what was planted) and the corresponding area, up to 5 different crops
@@ -111,22 +121,20 @@ class CROPEX14FieldMap:
             "crop_code_4": pd.to_numeric(gdf["nu14_n_c4"]), "crop_area_4": gdf["nu14_f_c4"],
             "crop_code_5": pd.to_numeric(gdf["nu14_n_c5"]), "crop_area_5": gdf["nu14_f_c5"],
             # geometry: field polygon in different projections
-            "poly_shapefile": polygons_shapefile, # shapefile geometry (3-degree Gauss-Kruger zone 4)
-            "poly_longitude_latitude": polygons_long_lat, # longitude latitude
-            "poly_easting_northing": polygons_easting_northing, # LUT easting northing (UTM zone 33N)
+            "poly_shapefile": poly_shapefile, # shapefile geometry (3-degree Gauss-Kruger zone 4)
+            "poly_longitude_latitude": poly_long_lat, # longitude latitude
+            "poly_easting_northing": poly_e_n, # LUT easting northing (UTM zone 33N)
         })
         if band is not None and pass_name is not None:
             # create field polygons in LUT and SLC pixel coordinates
             fsar_pass = self.cropex14campaign.get_pass(pass_name, band)
             lut = fsar_pass.load_gtc_sr2geo_lut()
-            # translate each polygon to the LUT indices
-            polygons_easting_northing_lut: gpd.GeoSeries = polygons_easting_northing.copy()
-            polygons_easting_northing_lut.crs = None
-            polygons_easting_northing_lut = polygons_easting_northing_lut.translate(-lut.min_east, -lut.min_north)
-            slc_poly_list = [self._geocode_shape(lut_poly, lut.lut_az, lut.lut_rg) for lut_poly in polygons_easting_northing_lut.to_list()]
+            # translate each polygon to the LUT indices, then to SLC indices
+            poly_e_n_lut = [self._translate_to_lut_indices(en_poly, lut) for en_poly in poly_e_n.to_list()]
+            poly_rg_az = [self._geocode_shape(lut_poly, lut) for lut_poly in poly_e_n_lut]
             processed_df = processed_df.assign(
-                poly_easting_northing_lut = polygons_easting_northing_lut, # LUT pixel indices, easting northing
-                poly_range_azimuth = gpd.GeoSeries(slc_poly_list), # SLC pixel indices, azimuth range
+                poly_easting_northing_lut = gpd.GeoSeries(poly_e_n_lut), # LUT pixel indices, easting northing
+                poly_range_azimuth = gpd.GeoSeries(poly_rg_az), # SLC pixel indices, azimuth range
             )
         return processed_df
 
