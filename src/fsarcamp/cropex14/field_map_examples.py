@@ -70,4 +70,4 @@ def example_crop_mask_raster():
     plt.close("all")
 
 if __name__ == "__main__":
-    example_crop_mask_raster()
+    example_load_field_by_id()
