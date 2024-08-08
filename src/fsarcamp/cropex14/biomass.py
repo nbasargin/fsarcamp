@@ -137,6 +137,124 @@ class CROPEX14Biomass:
             "soil_moisture_4", "soil_moisture_5", "soil_moisture_6", "data_src",
         ])
     
+    def _get_additional_data(self):
+        # data extracted manually from comments in excel sheets
+        # date_time, point_id, veg_height, bbch, data_src
+        rows = [
+            # Wallerfing_soil_moisture_2014_04_09
+            (datetime.datetime(2014, 4, 9, 10, 10), "W10_Triangular", 20, np.nan, "Wallerfing_soil_moisture_2014_04_09.xlsx"),
+            (datetime.datetime(2014, 4, 9, 8, 55), "C1_Meteo", 0, np.nan, "Wallerfing_soil_moisture_2014_04_09.xlsx"), # bare soil
+            (datetime.datetime(2014, 4, 9, 10, 10), "C2_Big", 0, np.nan, "Wallerfing_soil_moisture_2014_04_09.xlsx"), # bare soil
+            # Wallerfing_soil_moisture_2014_04_10
+            (datetime.datetime(2014, 4, 10, 8, 40), "C1_Meteo", 0, np.nan, "Wallerfing_soil_moisture_2014_04_10.xlsx"), # bare soil
+            (datetime.datetime(2014, 4, 10, 9, 10), "C2_Big", 0, np.nan, "Wallerfing_soil_moisture_2014_04_10.xlsx"), # bare soil
+            # Wallerfing_soil_moisture_2014_04_11            
+            (datetime.datetime(2014, 4, 11, 11, 0), "W10_Triangular", 20, np.nan, "Wallerfing_soil_moisture_2014_04_11.xlsx"),
+            (datetime.datetime(2014, 4, 11, 8, 25), "C1_Meteo", 0, np.nan, "Wallerfing_soil_moisture_2014_04_11.xlsx"), # bare soil
+            (datetime.datetime(2014, 4, 11, 8, 55), "C2_Big", 0, np.nan, "Wallerfing_soil_moisture_2014_04_11.xlsx"), # bare soil
+            # Wallerfing_soil_moisture_2014_05_15
+            (datetime.datetime(2014, 5, 15, 11, 45), "W10_Triangular", 50, np.nan, "Wallerfing_soil_moisture_2014_05_15.xlsx"),
+            (datetime.datetime(2014, 5, 15, 10, 0), "C1_Meteo", 5, np.nan, "Wallerfing_soil_moisture_2014_05_15.xlsx"), # maize 5 cm
+            (datetime.datetime(2014, 5, 15, 9, 30), "C2_Big", 10, np.nan, "Wallerfing_soil_moisture_2014_05_15.xlsx"), # maize 10 cm
+            # Wallerfing_soil_moisture_2014_05_22
+            #   wheat: height 50-60 cm, bbch 30 (begin of stem elongation)
+            (datetime.datetime(2014, 5, 22, 8, 45), "W10_Triangular", 55, 30, "Wallerfing_soil_moisture_2014_05_22.xlsx"),
+            #   maize C2: height 15 cm, bbch 13 (3-4 leaves)
+            (datetime.datetime(2014, 5, 22, 9, 45), "C1_Meteo", 15, 13, "Wallerfing_soil_moisture_2014_05_22.xlsx"),
+            #   maize C2: height 10 cm, bbch 13 (3-4 leaves)
+            (datetime.datetime(2014, 5, 22, 10, 30), "C2_Big", 10, 13, "Wallerfing_soil_moisture_2014_05_22.xlsx"),
+            # Wallerfing_soil_moisture_2014_06_04
+            (datetime.datetime(2014, 6, 4, 9, 0), "W10_Triangular", 69, np.nan, "Wallerfing_soil_moisture_2014_06_04.xlsx"),
+            #   maize C1: height 40 cm, height 29 cm near meteo station, bbch 16 (6 leaves)
+            (datetime.datetime(2014, 6, 4, 10, 15), "C1_Meteo", 40, 16, "Wallerfing_soil_moisture_2014_06_04.xlsx"),
+            (datetime.datetime(2014, 6, 4, 10, 15), "C1_Meteo_near_station", 29, 16, "Wallerfing_soil_moisture_2014_06_04.xlsx"),
+            (datetime.datetime(2014, 6, 4, 11, 20), "C2_Big", 28, 16, "Wallerfing_soil_moisture_2014_06_04.xlsx"),
+            # Wallerfing_soil_moisture_2014_06_12
+            #   maize C1: height 85-95 cm, height 50-60 cm near meteo station
+            (datetime.datetime(2014, 6, 12, 9, 20), "C1_Meteo", 90, np.nan, "Wallerfing_soil_moisture_2014_06_12.xlsx"),
+            (datetime.datetime(2014, 6, 12, 9, 20), "C1_Meteo_near_station", 55, np.nan, "Wallerfing_soil_moisture_2014_06_12.xlsx"),
+            (datetime.datetime(2014, 6, 12, 10, 40), "C2_Big", 63, np.nan, "Wallerfing_soil_moisture_2014_06_12.xlsx"),
+            # Wallerfing_soil_moisture_2014_06_18
+            #   maize C1: height 118-125 cm, height 90 cm near meteo station
+            (datetime.datetime(2014, 6, 18, 9, 10), "C1_Meteo", 121.5, np.nan, "Wallerfing_soil_moisture_2014_06_18.xlsx"),
+            (datetime.datetime(2014, 6, 18, 9, 10), "C1_Meteo_near_station", 90, np.nan, "Wallerfing_soil_moisture_2014_06_18.xlsx"),
+            #   maize C2: height 90-105 cm
+            (datetime.datetime(2014, 6, 18, 10, 0), "C2_Big", 97.5, np.nan, "Wallerfing_soil_moisture_2014_06_18.xlsx"),
+            #   Big field, cucumber: 27-31 cm, sugar beet 36 cm
+            # Wallerfing_soil_moisture_2014_06_27
+            #   wheat: height 75-80 cm
+            (datetime.datetime(2014, 6, 27, 17, 15), "W10_Triangular", 77.5, np.nan, "Wallerfing_soil_moisture_2014_06_27.xlsx"),
+            #   maize C1: point #1: 155-160 cm, point #3: 120-125 cm, point #9: 130-135 cm
+            (datetime.datetime(2014, 6, 27, 16, 30), "C1_Meteo_point_1", 157.5, np.nan, "Wallerfing_soil_moisture_2014_06_27.xlsx"),
+            (datetime.datetime(2014, 6, 27, 16, 30), "C1_Meteo_point_3", 122.5, np.nan, "Wallerfing_soil_moisture_2014_06_27.xlsx"),
+            (datetime.datetime(2014, 6, 27, 16, 30), "C1_Meteo_point_9", 132.5, np.nan, "Wallerfing_soil_moisture_2014_06_27.xlsx"),
+            #   maize C2: height 120-125 cm
+            (datetime.datetime(2014, 6, 27, 16, 20), "C2_Big", 122.5, np.nan, "Wallerfing_soil_moisture_2014_06_27.xlsx"),
+            #   Big field, cucumber: height 20-25 cm, row spacing 70 cm
+            # Wallerfing_soil_moisture_2014_07_03
+            #   wheat: point #3: height 75-80 cm, point #12: height 85-90 cm (slightly different crop)
+            (datetime.datetime(2014, 7, 3, 14, 30), "W10_Triangular_point_3", 77.5, np.nan, "Wallerfing_soil_moisture_2014_07_03.xlsx"),
+            (datetime.datetime(2014, 7, 3, 14, 30), "W10_Triangular_point_12", 87.5, np.nan, "Wallerfing_soil_moisture_2014_07_03.xlsx"),
+            #   maize C1: point #1: 210-215 cm, point #2: 185-195 cm, point #4: 145-150 cm, point # 8: 170-175 cm, point #10: 175-185 cm
+            (datetime.datetime(2014, 7, 3, 8, 45), "C1_Meteo_point_1", 212.5, np.nan, "Wallerfing_soil_moisture_2014_07_03.xlsx"),
+            (datetime.datetime(2014, 7, 3, 8, 45), "C1_Meteo_point_2", 190, np.nan, "Wallerfing_soil_moisture_2014_07_03.xlsx"),
+            (datetime.datetime(2014, 7, 3, 8, 45), "C1_Meteo_point_4", 147.5, np.nan, "Wallerfing_soil_moisture_2014_07_03.xlsx"),
+            (datetime.datetime(2014, 7, 3, 8, 45), "C1_Meteo_point_8", 172.5, np.nan, "Wallerfing_soil_moisture_2014_07_03.xlsx"),
+            (datetime.datetime(2014, 7, 3, 8, 45), "C1_Meteo_point_10", 180, np.nan, "Wallerfing_soil_moisture_2014_07_03.xlsx"),
+            #   maize C2: point #2: 120-125 cm, point #5: 180-190 cm, point #12: 125-135 cm 
+            (datetime.datetime(2014, 7, 3, 10, 20), "C2_Big_point_2", 122.5, np.nan, "Wallerfing_soil_moisture_2014_07_03.xlsx"),
+            (datetime.datetime(2014, 7, 3, 10, 20), "C2_Big_point_5", 185, np.nan, "Wallerfing_soil_moisture_2014_07_03.xlsx"),
+            (datetime.datetime(2014, 7, 3, 10, 20), "C2_Big_point_12", 130, np.nan, "Wallerfing_soil_moisture_2014_07_03.xlsx"),
+            #   Big field, cucumber: height 25 cm, row spacing 60 cm, spacing between 2 cucumber rows 150 cm (?)
+            # Wallerfing_soil_moisture_2014_07_18
+            #   wheat: height 70-80 cm, phenology 61-63
+            (datetime.datetime(2014, 7, 18, 10, 30), "W10_Triangular", 75, 62, "Wallerfing_soil_moisture_2014_07_18.xlsx"),
+            #   maize C1: height point #1: 320-340 cm, point #4: 280 cm, point #6 280 cm, point #8: 290-300 cm, point #10: 280cm
+            (datetime.datetime(2014, 7, 18, 9, 0), "C1_Meteo_point_1", 330, np.nan, "Wallerfing_soil_moisture_2014_07_18.xlsx"),
+            (datetime.datetime(2014, 7, 18, 9, 0), "C1_Meteo_point_4", 280, np.nan, "Wallerfing_soil_moisture_2014_07_18.xlsx"),
+            (datetime.datetime(2014, 7, 18, 9, 0), "C1_Meteo_point_6", 280, np.nan, "Wallerfing_soil_moisture_2014_07_18.xlsx"),
+            (datetime.datetime(2014, 7, 18, 9, 0), "C1_Meteo_point_8", 295, np.nan, "Wallerfing_soil_moisture_2014_07_18.xlsx"),
+            (datetime.datetime(2014, 7, 18, 9, 0), "C1_Meteo_point_10", 280, np.nan, "Wallerfing_soil_moisture_2014_07_18.xlsx"),
+            #   maize C2: height point #1: 260-270 cm, corn is in flowering stage
+            (datetime.datetime(2014, 7, 18, 8, 45), "C2_Big_point_1", 265, np.nan, "Wallerfing_soil_moisture_2014_07_18.xlsx"),
+            #   Big field, cucumber: height 25-30 cm, potato: 55-60 cm, sugar beet: 60-65 cm
+            # Wallerfing_soil_moisture_2014_07_24
+            #   maize C1: height point #3: 288 cm, point #4: 320 cm, point #6: 320 cm, point #10: 300 cm
+            (datetime.datetime(2014, 7, 24, 0, 0), "C1_Meteo_point_3", 288, np.nan, "Wallerfing_soil_moisture_2014_07_24.xlsx"),
+            (datetime.datetime(2014, 7, 24, 0, 0), "C1_Meteo_point_4", 320, np.nan, "Wallerfing_soil_moisture_2014_07_24.xlsx"),
+            (datetime.datetime(2014, 7, 24, 0, 0), "C1_Meteo_point_6", 320, np.nan, "Wallerfing_soil_moisture_2014_07_24.xlsx"),
+            (datetime.datetime(2014, 7, 24, 0, 0), "C1_Meteo_point_10", 300, np.nan, "Wallerfing_soil_moisture_2014_07_24.xlsx"),
+            #   maize C2: height point #1: 280 cm, point #6: 337 cm, point #15: 312 cm, point #47: 317 cm
+            (datetime.datetime(2014, 7, 24, 9, 0), "C2_Big_point_1", 280, np.nan, "Wallerfing_soil_moisture_2014_07_24.xlsx"),
+            (datetime.datetime(2014, 7, 24, 9, 0), "C2_Big_point_6", 337, np.nan, "Wallerfing_soil_moisture_2014_07_24.xlsx"),
+            (datetime.datetime(2014, 7, 24, 9, 0), "C2_Big_point_15", 312, np.nan, "Wallerfing_soil_moisture_2014_07_24.xlsx"),
+            (datetime.datetime(2014, 7, 24, 9, 0), "C2_Big_point_47", 317, np.nan, "Wallerfing_soil_moisture_2014_07_24.xlsx"),
+            # Wallerfing_soil_moisture_2014_08_04
+            #   maize C1: height 290 cm, another measurement 330-340 cm
+            (datetime.datetime(2014, 8, 4, 11, 30), "C1_Meteo_a", 290, np.nan, "Wallerfing_soil_moisture_2014_08_04.xlsx"),
+            (datetime.datetime(2014, 8, 4, 11, 30), "C1_Meteo_b", 335, np.nan, "Wallerfing_soil_moisture_2014_08_04.xlsx"),
+            #   maize C2: height point #6: 320 cm
+            (datetime.datetime(2014, 8, 4, 12, 37), "C2_Big_point_6", 320, np.nan, "Wallerfing_soil_moisture_2014_08_04.xlsx"),
+            #   Big field, cucumber: height 20-30 cm, sugar beet: 50-60 cm
+            # Wallerfing_soil_moisture_2014_08_21
+            #   maize C1: height point #1: 338 cm, point #7: 302 cm
+            (datetime.datetime(2014, 8, 21, 12, 20), "C1_Meteo_point_1", 338, np.nan, "Wallerfing_soil_moisture_2014_08_21.xlsx"),
+            (datetime.datetime(2014, 8, 21, 12, 20), "C1_Meteo_point_7", 302, np.nan, "Wallerfing_soil_moisture_2014_08_21.xlsx"),
+            #   maize C2: height point #1: 275-293 cm, point #7: 342 cm, point #14: 334 cm
+            (datetime.datetime(2014, 8, 21, 9, 40), "C2_Big_point_1", 284, np.nan, "Wallerfing_soil_moisture_2014_08_21.xlsx"),
+            (datetime.datetime(2014, 8, 21, 9, 40), "C2_Big_point_7", 342, np.nan, "Wallerfing_soil_moisture_2014_08_21.xlsx"),
+            (datetime.datetime(2014, 8, 21, 9, 40), "C2_Big_point_14", 334, np.nan, "Wallerfing_soil_moisture_2014_08_21.xlsx"),
+            #   Big field, cucumber: as last time, sugar beet: 50-55 cm
+            # Wallerfing_soil_moisture_2014_08_24
+            #   maize C1: height point #2: 325 cm
+            (datetime.datetime(2014, 8, 24, 9, 15), "C1_Meteo_point_2", 325, np.nan, "Wallerfing_soil_moisture_2014_08_24.xlsx"),
+            #   maize C2: height point #2: 315-320 cm, row spacing 18x76 (?)
+            (datetime.datetime(2014, 8, 24, 10, 30), "C2_Big_point_2", 317.5, np.nan, "Wallerfing_soil_moisture_2014_08_24.xlsx"),
+            #   Big field, cucumber: 15-25 (plants do not look fresh anymore), sugar beet: 50-55 cm
+        ]
+        # Note: latitude-longitude coordinates could be obtained for some points (where point numbers are defined)
+        return pd.DataFrame(rows, columns=["date_time", "point_id", "veg_height", "bbch", "data_src"])
+
     def load_biomass_points(self, band=None, pass_name=None):
         """
         Load point biomass measurements.
@@ -185,6 +303,7 @@ class CROPEX14Biomass:
             self._read_biomass_file(self.data_folder / "Veg_Wallerfing_2014_07_24.xlsx"),
             self._read_biomass_file(self.data_folder / "Veg_Wallerfing_2014_07_30.xlsx"),
             self._read_biomass_file(self.data_folder / "Veg_Wallerfing_2014_08_21.xlsx"),
+            self._get_additional_data(),
         ]
         combined_df = pd.concat(all_dfs, ignore_index=True)
         if band is not None and pass_name is not None:
@@ -196,5 +315,18 @@ if __name__ == "__main__":
     biomass_folder = fc.get_polinsar_folder() / "Ground_truth/Wallerfing_campaign_May_August_2014/Data/ground_measurements/biomass"
     biomass = CROPEX14Biomass(biomass_folder, campaign)
     df = biomass.load_biomass_points(band="L", pass_name="14cropex1114")
+
+    barley = df[df["point_id"].str.startswith("C")]
+    barley = barley.drop([
+        "northing", "easting",
+        "row_orientation", "row_spacing", "plants_per_meter",
+        "weight_025m2", "weight_100m2", "weight_bag",
+        "sample1_wet", "sample1_dry", "sample1_vwc_with_bag",
+        "sample2_wet", "sample2_dry", "sample2_vwc_with_bag",
+        "soil_moisture_1", "soil_moisture_2", "soil_moisture_3",
+        "soil_moisture_4", "soil_moisture_5", "soil_moisture_6", "data_src",
+        "lut_northing", "lut_easting", "azimuth", "range"
+    ], axis=1)
+    barley.to_csv("visualization/cropex_biomass_corn.csv", index=False)
+
     ## TODO: compare values with manual sheets from sarctd, add more values manually if needed
-    df.to_csv("visualization/cropex_biomass.csv", index=False)
