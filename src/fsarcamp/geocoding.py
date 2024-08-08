@@ -58,13 +58,30 @@ def geocode_north_east_to_az_rg(northing, easting, lut: fc.Geo2SlantRange):
     """
     Geocode northing-easting coordinates (projection of the F-SAR GTC lookup table) to SLC geometry (azimuth-range).
     First, the appropriate pixels corresponding to the northing-easting coordinates are selected in the lookup table.
-    The lookup table then provides the azimuth and range indices at the pixel positions.
+    The lookup table then provides the azimuth and range values (float-valued) at the pixel positions.
+    The azimuth and range values are invalid and set to NaN if:
+    - northing or easting are NaN, or
+    - northing or easting are outside of the lookup table, or
+    - retrieved azimuth or range values are negative
     """
-    lut_northing_idx = np.rint((northing - lut.min_north) / lut.pixel_spacing_north).astype(np.int64)
-    lut_easting_idx = np.rint((easting - lut.min_east) / lut.pixel_spacing_east).astype(np.int64)
-    azimuth_idx = lut.lut_az[lut_northing_idx, lut_easting_idx]
-    range_idx = lut.lut_rg[lut_northing_idx, lut_easting_idx]
-    return azimuth_idx, range_idx
+    # get lut pixel indices
+    lut_n = np.rint((northing - lut.min_north) / lut.pixel_spacing_north)
+    lut_e = np.rint((easting - lut.min_east) / lut.pixel_spacing_east)
+    # if some coords are NaN or outside of the lut, set them to valid values before lookup, mask out later
+    max_n, max_e = lut.lut_az.shape
+    invalid_idx = np.isnan(lut_n) | np.isnan(lut_e) | (lut_n < 0) | (lut_n >= max_n) | (lut_e < 0) | (lut_e >= max_e)
+    lut_n[invalid_idx] = 0
+    lut_e[invalid_idx] = 0
+    # get azimuth and range positions    
+    lut_n_idx = lut_n.astype(np.int64)
+    lut_e_idx = lut_e.astype(np.int64)
+    azimuth = lut.lut_az[lut_n_idx, lut_e_idx]
+    range = lut.lut_rg[lut_n_idx, lut_e_idx]
+    # clear invalid azimuth and range
+    invalid_results = invalid_idx | (azimuth < 0) | (range < 0)
+    azimuth[invalid_results] = np.nan
+    range[invalid_results] = np.nan
+    return azimuth, range
 
 def geocode_lat_lon_to_az_rg(longitude, latitude, lut: fc.Geo2SlantRange):
     """
