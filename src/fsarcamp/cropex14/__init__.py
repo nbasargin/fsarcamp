@@ -1,6 +1,7 @@
 # Re-exporting internal functionality
 from .fsar import CROPEX14Campaign
 from .moisture import CROPEX14Moisture
+from .biomass import CROPEX14Biomass
 from .field_map import CROPEX14FieldMap
 
 from .dates import MAY_12, MAY_15, MAY_22, MAY_23

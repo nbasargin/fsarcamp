@@ -277,6 +277,7 @@ class CROPEX14Biomass:
     def load_biomass_points(self, band=None, pass_name=None):
         """
         Load point biomass measurements.
+        Additional data points were manually added from the comments in soil moisture excel sheets. 
         
         If band and pass_name are provided, the point coordinates (northing, easting) will be
         additionally geocoded to the RGI azimuth and range coordinates using the F-SAR GTC-LUT files.
@@ -328,25 +329,3 @@ class CROPEX14Biomass:
         if band is not None and pass_name is not None:
             combined_df = self._extend_df_coords(combined_df, band, pass_name)
         return combined_df
-
-if __name__ == "__main__":
-    campaign = cr14.CROPEX14Campaign(fc.get_polinsar_folder() / "01_projects/CROPEX/CROPEX14")
-    biomass_folder = fc.get_polinsar_folder() / "Ground_truth/Wallerfing_campaign_May_August_2014/Data/ground_measurements/biomass"
-    biomass = CROPEX14Biomass(biomass_folder, campaign)
-    df = biomass.load_biomass_points(band="L", pass_name="14cropex1114")
-
-    wheat = df[df["point_id"].str.startswith("W")]
-    wheat = wheat.drop([
-        #"northing", "easting",
-        "row_orientation", "row_spacing", "plants_per_meter",
-        "weight_025m2", "weight_100m2", "weight_bag",
-        "sample1_wet", "sample1_dry", "sample1_vwc_with_bag",
-        "sample2_wet", "sample2_dry", "sample2_vwc_with_bag",
-        "soil_moisture_1", "soil_moisture_2", "soil_moisture_3",
-        "soil_moisture_4", "soil_moisture_5", "soil_moisture_6", "data_src",
-        "lut_northing", "lut_easting", 
-        #"azimuth", "range"
-    ], axis=1)
-    wheat.to_csv("visualization/cropex_biomass_wheat.csv", index=False)
-
-    ## TODO: compare values with manual sheets from sarctd, add more values manually if needed

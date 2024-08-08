@@ -31,6 +31,7 @@ The measurement include crop height, water content, biomass, and soil moisture.
 
 Following data loaders are currently supported:
 - `CROPEX14Campaign`: F-SAR data loader (SLC, incidence, lookup tables, etc.)
+- `CROPEX14Biomass`: Point-wise biomass ground measurements collected by the ground teams over specific fields
 - `CROPEX14Moisture`: Point-wise soil moisture ground measurements collected by the ground teams over specific fields
 - `CROPEX14FieldMap`: Field polygons and crop types
 
