@@ -95,6 +95,7 @@ class CROPEX14Biomass:
             row_spacing = self._to_float(df.iat[29, col]) # cm
             plants_per_meter = self._to_float(df.iat[30, col])
             bbch = self._to_float(df.iat[31, col])
+            if df.iat[31, col] == "last stage": bbch = 91 # full ripe, ready for harvest
             weight_025m2 = self._to_float(df.iat[34, col]) # g (per 0.25 m^2)
             weight_100m2 = self._to_float(df.iat[35, col]) # g (per 1 m^2)
             weight_bag = self._to_float(df.iat[36, col]) # g
@@ -334,8 +335,8 @@ if __name__ == "__main__":
     biomass = CROPEX14Biomass(biomass_folder, campaign)
     df = biomass.load_biomass_points(band="L", pass_name="14cropex1114")
 
-    corn = df[df["point_id"].str.startswith("C")]
-    corn = corn.drop([
+    wheat = df[df["point_id"].str.startswith("W")]
+    wheat = wheat.drop([
         #"northing", "easting",
         "row_orientation", "row_spacing", "plants_per_meter",
         "weight_025m2", "weight_100m2", "weight_bag",
@@ -346,6 +347,6 @@ if __name__ == "__main__":
         "lut_northing", "lut_easting", 
         #"azimuth", "range"
     ], axis=1)
-    corn.to_csv("visualization/cropex_biomass_corn.csv", index=False)
+    wheat.to_csv("visualization/cropex_biomass_wheat.csv", index=False)
 
     ## TODO: compare values with manual sheets from sarctd, add more values manually if needed
