@@ -154,14 +154,18 @@ class CROPEX14FieldMap:
     def load_field_by_id(self, field_id, pass_name=None, band=None):
         """
         Load a field by ID. Returns a dataframe with the same columns as `load_fields`.
-        Most fields are defined by a single polygon but some have multiple.
+        Some IDs represent several fields (or field parts) grouped together, all corresponding polygons are returned.
         """
         fields = self.load_fields()
         # look up field polygons that contain specific points
+        corn_c1_side = (12.875333, 48.694533) # C1 field, polygon on the side
+        corn_c1_center = (12.874096, 48.694220) # C1 field, polygon in the center
+        corn_c2 = (12.873469, 48.696072) # C2 field
         points_on_field = {
-            cr14.CORN_C1: [(12.874096, 48.694220), (12.875333, 48.694533)],
-            cr14.CORN_C1_CENTER: [(12.874096, 48.694220)],
-            cr14.CORN_C2: [(12.873469, 48.696072)],
+            cr14.CORN_C1: [corn_c1_center, corn_c1_side],
+            cr14.CORN_C1_CENTER: [corn_c1_center],
+            cr14.CORN_C2: [corn_c2],
+            cr14.CORN_C1_C2: [corn_c1_center, corn_c1_side, corn_c2],
             cr14.CORN_C3: [(12.875444, 48.697499)],
             cr14.CORN_C5: [(12.872011, 48.702637)],
             cr14.CORN_C6: [(12.869678, 48.703700)],

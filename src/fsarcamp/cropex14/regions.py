@@ -7,6 +7,7 @@ Geographical regions, areas, and fields during the CROPEX 2014 campaign.
 CORN_C1 = "CORN_C1" # corn field next to the meteorological station
 CORN_C1_CENTER = "CORN_C1_CENTER" # center section of the corn field next to the meteorological station
 CORN_C2 = "CORN_C2" # corn field on the big field
+CORN_C1_C2 = "CORN_C1_C2" # both corn fields with ground measurements combined
 CORN_C3 = "CORN_C3"
 CORN_C5 = "CORN_C5"
 CORN_C6 = "CORN_C6"
