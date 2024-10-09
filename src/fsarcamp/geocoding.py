@@ -127,8 +127,12 @@ def geocode_coords_eastnorth_to_azrg(easting, northing, lut: fc.Geo2SlantRange):
     # if some coords are NaN or outside of the lut, set them to valid values before lookup, mask out later
     max_n, max_e = lut.lut_az.shape
     invalid_idx = np.isnan(lut_n) | np.isnan(lut_e) | (lut_n < 0) | (lut_n >= max_n) | (lut_e < 0) | (lut_e >= max_e)
-    lut_n[invalid_idx] = 0
-    lut_e[invalid_idx] = 0
+    if np.isscalar(invalid_idx):
+        if invalid_idx:
+            return np.nan, np.nan # only a single position provided and it is invalid
+    else: # not scalar
+        lut_n[invalid_idx] = 0
+        lut_e[invalid_idx] = 0
     # get azimuth and range positions    
     lut_n_idx = lut_n.astype(np.int64)
     lut_e_idx = lut_e.astype(np.int64)
@@ -136,13 +140,17 @@ def geocode_coords_eastnorth_to_azrg(easting, northing, lut: fc.Geo2SlantRange):
     rg = lut.lut_rg[lut_n_idx, lut_e_idx]
     # clear invalid azimuth and range
     invalid_results = invalid_idx | (az < 0) | (rg < 0)
-    az[invalid_results] = np.nan
-    rg[invalid_results] = np.nan
+    if np.isscalar(invalid_results):
+        if invalid_results:
+            return np.nan, np.nan # only a single position computed and it is invalid
+    else: # not scalar
+        az[invalid_results] = np.nan
+        rg[invalid_results] = np.nan
     return az, rg
 
 def geocode_coords_longlat_to_azrg(longitude, latitude, lut: fc.Geo2SlantRange):
     easting, northing = geocode_coords_longlat_to_eastnorth(longitude, latitude, lut.projection)
-    az, rg = geocode_coords_eastnorth_to_azrg(easting, northing)
+    az, rg = geocode_coords_eastnorth_to_azrg(easting, northing, lut)
     return az, rg
 
 # shapely geometry
