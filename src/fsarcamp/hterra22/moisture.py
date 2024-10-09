@@ -218,18 +218,18 @@ class HTERRA22Moisture:
         lut = fsar_pass.load_gtc_sr2geo_lut()
         latitude = df["latitude"].to_numpy()
         longitude = df["longitude"].to_numpy()
-        northing, easting = fc.geocode_lat_lon_to_north_east(longitude, latitude, lut)
+        easting, northing = fc.geocode_coords_longlat_to_eastnorth(longitude, latitude, lut.projection)
         lut_northing = (northing - lut.min_north) / lut.pixel_spacing_north
         lut_easting = (easting - lut.min_east) / lut.pixel_spacing_east
-        point_az, point_rg = fc.geocode_north_east_to_az_rg(northing, easting, lut)
+        az, rg = fc.geocode_coords_eastnorth_to_azrg(easting, northing, lut)
         # extend data frame
         df_extended = df.assign(
             northing=northing,
             easting=easting,
             lut_northing=lut_northing,
             lut_easting=lut_easting,
-            azimuth=point_az,
-            range=point_rg,
+            azimuth=az,
+            range=rg,
         )
         return df_extended
 
