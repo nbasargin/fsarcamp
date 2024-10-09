@@ -36,21 +36,6 @@ class HTERRA22MoistureInterpolated:
         Points within each dataframe are spatially close and soil moisture can be interpolated between them.
         Points in different dataframes should not be interpolated together but belong to the same region.
         """
-        # large regions made of smaller ones -> process small ones individually
-        if region == ht22.CREA:
-            return [
-                *self._form_interpolation_groups(band, ht22.CREA_BS_QU, time_period),
-                *self._form_interpolation_groups(band, ht22.CREA_DW, time_period),
-                *self._form_interpolation_groups(band, ht22.CREA_MA, time_period),
-                *self._form_interpolation_groups(band, ht22.CREA_SF, time_period),
-            ]
-        if region == ht22.CAIONE:
-            return [
-                *self._form_interpolation_groups(band, ht22.CAIONE_AA, time_period),
-                *self._form_interpolation_groups(band, ht22.CAIONE_DW, time_period),
-                *self._form_interpolation_groups(band, ht22.CAIONE_MA, time_period),
-            ]
-        # single region processing
         id_range = lambda first_id, last_id: [f"P{i}" for i in range(first_id, last_id + 1)] # first_id to last_id (including)
         df = self.moisture.load_soil_moisture_points(band, region, time_period)
         # split points into groups for specific fields and dates

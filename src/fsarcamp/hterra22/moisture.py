@@ -253,10 +253,6 @@ class HTERRA22Moisture:
                 ht22.CREA_BS_QU, ht22.CREA_DW, ht22.CREA_SF, ht22.CREA_MA,
                 ht22.CAIONE_DW, ht22.CAIONE_AA, ht22.CAIONE_MA,
             ]
-        elif region == ht22.CREA:
-            return [ht22.CREA_BS_QU, ht22.CREA_DW, ht22.CREA_SF, ht22.CREA_MA]
-        elif region == ht22.CAIONE:
-            return [ht22.CAIONE_DW, ht22.CAIONE_AA, ht22.CAIONE_MA]
         else: # single region
             return [region]
 
