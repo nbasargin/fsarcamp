@@ -122,6 +122,8 @@ def geocode_coords_eastnorth_to_azrg(easting, northing, lut: fc.Geo2SlantRange):
     - retrieved azimuth or range values are negative
     """
     # get lut pixel indices
+    easting = np.array(easting)
+    northing = np.array(northing)
     lut_n = np.rint((northing - lut.min_north) / lut.pixel_spacing_north)
     lut_e = np.rint((easting - lut.min_east) / lut.pixel_spacing_east)
     # if some coords are NaN or outside of the lut, set them to valid values before lookup, mask out later
@@ -162,7 +164,10 @@ def geocode_geometry_longlat_to_eastnorth(geometry_longlat: shapely.Geometry, lu
 
 def geocode_geometry_eastnorth_to_azrg(geometry_eastnorth: shapely.Geometry, lut: fc.Geo2SlantRange):
     eastnorth_to_azrg = lambda e, n: geocode_coords_eastnorth_to_azrg(e, n, lut)
-    return ops.transform(eastnorth_to_azrg, geometry_eastnorth)
+    try:
+        return ops.transform(eastnorth_to_azrg, geometry_eastnorth)
+    except:
+        return None # invalid shapes (e.g. outside LUT or SLC) throw errors
 
 def geocode_geometry_longlat_to_azrg(geometry_longlat: shapely.Geometry, lut: fc.Geo2SlantRange):
     shape_eastnorth = geocode_geometry_longlat_to_eastnorth(geometry_longlat, lut.projection)
