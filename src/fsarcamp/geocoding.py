@@ -46,60 +46,7 @@ def nearest_neighbor_lookup(img: np.ndarray, lut_az, lut_rg, inv_value=np.nan) -
     geocoded[invalid_positions] = inv_value
     return geocoded
 
-def geocode_lat_lon_to_north_east(longitude, latitude, lut: fc.Geo2SlantRange):
-    """
-    DEPRECATED
-    Transform latitude-longitude coordinates to northing-easting coordinates matching the F-SAR GTC lookup table projection.
-    Note: the northing-easting values are geographical coordinates and not the lookup table indices.
-    """
-    proj_latlong = pyproj.Proj(proj="latlong", ellps="WGS84", datum="WGS84")
-    latlong_to_lut = pyproj.Transformer.from_proj(proj_latlong, lut.projection)
-    easting, northing = latlong_to_lut.transform(longitude, latitude)
-    return northing, easting
-
-def geocode_north_east_to_az_rg(northing, easting, lut: fc.Geo2SlantRange):
-    """
-    DEPRECATED
-    Geocode northing-easting coordinates (projection of the F-SAR GTC lookup table) to SLC geometry (azimuth-range).
-    First, the appropriate pixels corresponding to the northing-easting coordinates are selected in the lookup table.
-    The lookup table then provides the azimuth and range values (float-valued) at the pixel positions.
-    The azimuth and range values are invalid and set to NaN if:
-    - northing or easting are NaN, or
-    - northing or easting are outside of the lookup table, or
-    - retrieved azimuth or range values are negative
-    """
-    # get lut pixel indices
-    lut_n = np.rint((northing - lut.min_north) / lut.pixel_spacing_north)
-    lut_e = np.rint((easting - lut.min_east) / lut.pixel_spacing_east)
-    # if some coords are NaN or outside of the lut, set them to valid values before lookup, mask out later
-    max_n, max_e = lut.lut_az.shape
-    invalid_idx = np.isnan(lut_n) | np.isnan(lut_e) | (lut_n < 0) | (lut_n >= max_n) | (lut_e < 0) | (lut_e >= max_e)
-    lut_n[invalid_idx] = 0
-    lut_e[invalid_idx] = 0
-    # get azimuth and range positions    
-    lut_n_idx = lut_n.astype(np.int64)
-    lut_e_idx = lut_e.astype(np.int64)
-    azimuth = lut.lut_az[lut_n_idx, lut_e_idx]
-    range = lut.lut_rg[lut_n_idx, lut_e_idx]
-    # clear invalid azimuth and range
-    invalid_results = invalid_idx | (azimuth < 0) | (range < 0)
-    azimuth[invalid_results] = np.nan
-    range[invalid_results] = np.nan
-    return azimuth, range
-
-def geocode_lat_lon_to_az_rg(longitude, latitude, lut: fc.Geo2SlantRange):
-    """
-    DEPRECATED
-    Geocode latitude-longitude coordinates to SLC geometry (azimuth-range) using the F-SAR GTC lookup table.
-    This function applies `geocode_lat_lon_to_north_east` followed by `geocode_north_east_to_az_rg`.
-    """
-    northing, easting = geocode_lat_lon_to_north_east(longitude, latitude, lut)
-    azimuth_idx, range_idx = geocode_north_east_to_az_rg(northing, easting, lut)
-    return azimuth_idx, range_idx
-
-# updated functionality
-
-# coordinate arrays
+# geocoding coordinate arrays
 
 def geocode_coords_longlat_to_eastnorth(longitude, latitude, lut_projection: pyproj.Proj):
     """
@@ -155,7 +102,7 @@ def geocode_coords_longlat_to_azrg(longitude, latitude, lut: fc.Geo2SlantRange):
     az, rg = geocode_coords_eastnorth_to_azrg(easting, northing, lut)
     return az, rg
 
-# shapely geometry
+# geocoding shapely geometry
 
 def geocode_geometry_longlat_to_eastnorth(geometry_longlat: shapely.Geometry, lut_projection: pyproj.Proj):
     proj_longlat = pyproj.Proj(proj="longlat", ellps="WGS84", datum="WGS84")
