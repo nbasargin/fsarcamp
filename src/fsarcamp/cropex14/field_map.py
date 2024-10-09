@@ -163,9 +163,7 @@ class CROPEX14FieldMap:
         corn_c2 = (12.873469, 48.696072) # C2 field
         points_on_field = {
             cr14.CORN_C1: [corn_c1_center, corn_c1_side],
-            cr14.CORN_C1_CENTER: [corn_c1_center],
             cr14.CORN_C2: [corn_c2],
-            cr14.CORN_C1_C2: [corn_c1_center, corn_c1_side, corn_c2],
             cr14.CORN_C3: [(12.875444, 48.697499)],
             cr14.CORN_C5: [(12.872011, 48.702637)],
             cr14.CORN_C6: [(12.869678, 48.703700)],

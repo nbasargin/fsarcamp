@@ -26,10 +26,6 @@ RAPESEED_R1 = "RAPESEED_R1"
 RAPESEED_R2 = "RAPESEED_R2"
 SUGAR_BEET_SB2 = "SUGAR_BEET_SB2"
 
-# DEPRECATED
-CORN_C1_CENTER = "CORN_C1_CENTER" # center section of the corn field next to the meteorological station
-CORN_C1_C2 = "CORN_C1_C2" # both corn fields with ground measurements combined
-
 class CROPEX14Regions:
     def __init__(self):
         self._polygons = {}
