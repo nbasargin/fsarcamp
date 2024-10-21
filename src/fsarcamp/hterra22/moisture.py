@@ -219,9 +219,8 @@ class HTERRA22Moisture:
         latitude = df["latitude"].to_numpy()
         longitude = df["longitude"].to_numpy()
         easting, northing = fc.geocode_coords_longlat_to_eastnorth(longitude, latitude, lut.projection)
-        lut_northing = (northing - lut.min_north) / lut.pixel_spacing_north
-        lut_easting = (easting - lut.min_east) / lut.pixel_spacing_east
-        az, rg = fc.geocode_coords_eastnorth_to_azrg(easting, northing, lut)
+        lut_northing, lut_easting = fc.geocode_coords_eastnorth_to_lutindices(easting, northing, lut)
+        az, rg = fc.geocode_coords_lutindices_to_azrg(lut_northing, lut_easting, lut)
         # extend data frame
         df_extended = df.assign(
             northing=northing,
