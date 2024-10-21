@@ -96,6 +96,15 @@ class HTERRA22Regions:
         """ Get region geometry (polygon or multipolygon) in longitude-latitude coordinates. """
         return self._polygons[region_name]
 
+    def get_geometry_lutindices(self, region_name: str, campaign: ht22.HTERRA22Campaign, pass_name: str, band: str):
+        """ Get region geometry (polygon or multipolygon) where each vertex represents indices of the F-SAR GTC lookup table. """
+        fsar_pass = campaign.get_pass(pass_name, band)
+        lut = fsar_pass.load_gtc_sr2geo_lut()
+        poly_longlat = self.get_geometry_longlat(region_name)
+        poly_eastnorth = fc.geocode_geometry_longlat_to_eastnorth(poly_longlat, lut.projection)
+        poly_lutindices = fc.geocode_geometry_eastnorth_to_lutindices(poly_eastnorth, lut)
+        return poly_lutindices
+    
     def get_geometry_azrg(self, region_name: str, campaign: ht22.HTERRA22Campaign, pass_name: str, band: str):
         """
         Get region geometry (polygon or multipolygon) in azimuth-range coordinates for a specific band.
