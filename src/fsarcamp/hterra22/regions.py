@@ -13,6 +13,8 @@ CREA_MA = "CREA-MA" # CREA farm, maize (corn) field in June
 CAIONE_DW = "CAIONE-DW" # Caione farm, two adjacent durum wheat fields in April
 CAIONE_AA = "CAIONE-AA" # Caione farm, alfalfa field in June
 CAIONE_MA = "CAIONE-MA" # Caione farm, two adjacent maize (corn) fields in June
+CAIONE_MA_EAST = "CAIONE-MA-EAST" # Caione farm, smaller non-irrigated maize (corn) field in June
+CAIONE_MA_WEST = "CAIONE-MA-WEST" # Caione farm, larger irrigated maize (corn) field in June
 
 class HTERRA22Regions:
     """
@@ -91,6 +93,8 @@ class HTERRA22Regions:
             (15.50382958088255, 41.4919279412825),
         ])
         self._polygons[CAIONE_MA] = shapely.MultiPolygon([caione_ma_east, caione_ma_west])
+        self._polygons[CAIONE_MA_EAST] = caione_ma_east
+        self._polygons[CAIONE_MA_WEST] = caione_ma_west
     
     def get_geometry_longlat(self, region_name: str):
         """ Get region geometry (polygon or multipolygon) in longitude-latitude coordinates. """
