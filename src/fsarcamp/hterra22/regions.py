@@ -7,6 +7,8 @@ import fsarcamp.hterra22 as ht22
 
 # Constants: identifiers for image areas / fields with intensive ground measurements
 CREA_BS_QU = "CREA-BS-QU" # CREA farm, bare soil field in April, quinoa in June (same field)
+CREA_BS_QU_WET = "CREA-BS-QU-WET" # CREA farm, irrigated part of bare soil field in April, quinoa in June
+CREA_BS_QU_DRY = "CREA-BS-QU-DRY" # CREA farm, dry part of bare soil field in April, quinoa in June
 CREA_DW = "CREA-DW" # CREA farm, durum wheat field in April
 CREA_SF = "CREA-SF" # CREA farm, sunflower field in June
 CREA_MA = "CREA-MA" # CREA farm, maize (corn) field in June
@@ -30,6 +32,23 @@ class HTERRA22Regions:
             (15.50131167926727, 41.46220840625713),
             (15.499647238718, 41.46267787843318),
             (15.49945445036212, 41.46256004052474),
+        ])
+        self._polygons[CREA_BS_QU_WET] = shapely.Polygon([
+            (15.50029130488808, 41.46248543187856),
+            (15.50002032742793, 41.46195054981363),
+            (15.50103505657697, 41.46164350882291),
+            (15.5012982882608, 41.46220297857269),
+            (15.50029130488808, 41.46248543187856),
+        ])
+        self._polygons[CREA_BS_QU_DRY] = shapely.Polygon([
+            (15.49964169891338, 41.46267512636907),
+            (15.499457274054, 41.46256186412497),
+            (15.49923662783177, 41.46182585577106),
+            (15.50089357743389, 41.46135361278795),
+            (15.5010316361351, 41.46163211253841),
+            (15.49999258222549, 41.46194674825134),
+            (15.5002746484593, 41.46249523525378),
+            (15.49964169891338, 41.46267512636907),
         ])
         self._polygons[CREA_DW] = shapely.Polygon([
             (15.49388005761628, 41.45762079746844),
@@ -186,7 +205,7 @@ def get_region_radar_coordinates(band, region_name):
 
 def get_soil_texture_by_region(region_name):
     """ Get soil texture (sand and clay values) for the specified region. """
-    if region_name in [CREA_BS_QU, CREA_DW, CREA_SF, CREA_MA]:
+    if region_name in [CREA_BS_QU, CREA_BS_QU_WET, CREA_BS_QU_DRY, CREA_DW, CREA_SF, CREA_MA]:
         crea_sand, crea_clay = 26.8, 32.4
         return crea_sand, crea_clay
     if region_name in [CAIONE_DW, CAIONE_AA, CAIONE_MA, CAIONE_MA_EAST, CAIONE_MA_WEST]:
