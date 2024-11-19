@@ -189,7 +189,7 @@ def get_soil_texture_by_region(region_name):
     if region_name in [CREA_BS_QU, CREA_DW, CREA_SF, CREA_MA]:
         crea_sand, crea_clay = 26.8, 32.4
         return crea_sand, crea_clay
-    if region_name in [CAIONE_DW, CAIONE_AA, CAIONE_MA]:
+    if region_name in [CAIONE_DW, CAIONE_AA, CAIONE_MA, CAIONE_MA_EAST, CAIONE_MA_WEST]:
         caione_sand, caione_clay = 24.5, 38.2
         return caione_sand, caione_clay
     raise Exception(f"Unknown region name: {region_name}")
