@@ -191,3 +191,7 @@ class CROPEX14Regions:
         fsar_pass = campaign.get_pass(pass_name, band)
         lut = fsar_pass.load_gtc_sr2geo_lut()
         return fc.geocode_geometry_longlat_to_azrg(poly_long_lat, lut)
+
+    def define_geometry(self, region_name: str, geometry_longlat: shapely.Geometry):
+        """ Define a custom region in longitude-latitude coordinates. """
+        self._polygons[region_name] = geometry_longlat
