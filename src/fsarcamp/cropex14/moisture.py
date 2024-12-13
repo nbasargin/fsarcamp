@@ -181,15 +181,12 @@ class CROPEX14Moisture:
         all_points = pd.concat(all_dfs, ignore_index=True)
         return all_points
 
-    def filter_points_by_region(self, points: pd.DataFrame, region_name: str):
+    def filter_points_by_geometry(self, points: pd.DataFrame, geometry_longlat: shapely.Geometry):
         """
-        Filter the points by the specified region.
-        The region is specified by name, see `fsarcamp.cropex14.regions` for allowed values.
+        Filter the points by the specified geometry (e.g. polygon) in longitude-latitude coordinates.
         """
-        regions = cr14.CROPEX14Regions()
         point_locations = gpd.GeoSeries(points.apply(lambda x: shapely.Point(x["longitude"], x["latitude"]), axis=1))
-        geometry = regions.get_geometry_longlat(region_name)
-        result = points[point_locations.within(geometry)]
+        result = points[point_locations.within(geometry_longlat)]
         return result
 
     def geocode_points(self, points: pd.DataFrame, campaign: cr14.CROPEX14Campaign, pass_name: str, band: str):

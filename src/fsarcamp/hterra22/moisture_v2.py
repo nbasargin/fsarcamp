@@ -193,15 +193,12 @@ class HTERRA22MoistureV2:
         result = pd.concat(dataframes, ignore_index=True)
         return result
 
-    def filter_points_by_region(self, points: pd.DataFrame, region_name: str):
+    def filter_points_by_geometry(self, points: pd.DataFrame, geometry_longlat: shapely.Geometry):
         """
-        Filter the points by the specified region.
-        The region is specified by name, see `fsarcamp.hterra22.regions` for allowed values.
+        Filter the points by the specified geometry (e.g. polygon) in longitude-latitude coordinates.
         """
-        regions = ht22.HTERRA22Regions()
         point_locations = gpd.GeoSeries(points.apply(lambda x: shapely.Point(x["longitude"], x["latitude"]), axis=1))
-        geometry = regions.get_geometry_longlat(region_name)
-        result = points[point_locations.within(geometry)]
+        result = points[point_locations.within(geometry_longlat)]
         return result
 
     def geocode_points(self, points: pd.DataFrame, campaign: ht22.HTERRA22Campaign, band: str):
