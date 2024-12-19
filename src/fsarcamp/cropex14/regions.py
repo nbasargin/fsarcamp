@@ -24,7 +24,9 @@ BARLEY_B1 = "BARLEY_B1"
 BARLEY_B2 = "BARLEY_B1"
 RAPESEED_R1 = "RAPESEED_R1"
 RAPESEED_R2 = "RAPESEED_R2"
+SUGAR_BEET_SB0 = "SUGAR_BEET_SB0" # thin sugar beet stripe next to cucumbers on the big field
 SUGAR_BEET_SB2 = "SUGAR_BEET_SB2"
+CUCUMBERS_CU1 = "CUCUMBERS_CU1" # cucumbers on the big field
 
 class CROPEX14Regions:
     def __init__(self):
@@ -165,11 +167,23 @@ class CROPEX14Regions:
             (12.86085109239522, 48.68955652792251),
             (12.85904583579791, 48.68968137298259),
         ])
+        self._polygons[SUGAR_BEET_SB0] = shapely.Polygon([
+            (12.86806389523245, 48.69812979684614),
+            (12.87299291375635, 48.69915249764704),
+            (12.87271295766004, 48.69946530329874),
+            (12.86783875215881, 48.6984421375141),
+        ])
         self._polygons[SUGAR_BEET_SB2] = shapely.Polygon([
             (12.8614183554764, 48.69323870062198),
             (12.86657653507957, 48.69433842589564),
             (12.86538213489877, 48.69614868522724),
             (12.86010539487434, 48.69501375600024),
+        ])
+        self._polygons[CUCUMBERS_CU1] = shapely.Polygon([
+            (12.86927242129076, 48.69631906055042),
+            (12.8742849093963, 48.69733231805814),
+            (12.87302004302986, 48.69910039335189),
+            (12.86811404763672, 48.69806688627347),
         ])
 
     def get_geometry_longlat(self, region_name: str):
