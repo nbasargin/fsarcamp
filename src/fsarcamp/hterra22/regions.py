@@ -6,13 +6,13 @@ import fsarcamp as fc
 import fsarcamp.hterra22 as ht22
 
 # Constants: identifiers for image areas / fields with intensive ground measurements
-CREA_BS_QU = "CREA-BS-QU" # CREA farm, bare soil field in April, quinoa in June (same field)
-CREA_DW = "CREA-DW" # CREA farm, durum wheat field in April
-CREA_SF = "CREA-SF" # CREA farm, sunflower field in June
-CREA_MA = "CREA-MA" # CREA farm, maize (corn) field in June
-CAIONE_DW = "CAIONE-DW" # Caione farm, two adjacent durum wheat fields in April
-CAIONE_AA = "CAIONE-AA" # Caione farm, alfalfa field in June
-CAIONE_MA = "CAIONE-MA" # Caione farm, two adjacent maize (corn) fields in June
+CREA_BS_QU = "CREA_BS_QU" # CREA farm, bare soil field in April, quinoa in June (same field)
+CREA_DW = "CREA_DW" # CREA farm, durum wheat field in April
+CREA_SF = "CREA_SF" # CREA farm, sunflower field in June
+CREA_MA = "CREA_MA" # CREA farm, maize (corn) field in June
+CAIONE_DW = "CAIONE_DW" # Caione farm, two adjacent durum wheat fields in April
+CAIONE_AA = "CAIONE_AA" # Caione farm, alfalfa field in June
+CAIONE_MA = "CAIONE_MA" # Caione farm, two adjacent maize (corn) fields in June
 
 class HTERRA22Regions:
     """
