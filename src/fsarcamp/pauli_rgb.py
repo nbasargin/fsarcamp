@@ -1,8 +1,10 @@
 """
 Functions to convert PolSAR data to Pauli RGB images.
 """
+
 import numpy as np
 from scipy.ndimage import uniform_filter
+
 
 def _clip_pauli_rgb(pauli_r, pauli_g, pauli_b, rgb_vmax=None):
     """
@@ -16,6 +18,7 @@ def _clip_pauli_rgb(pauli_r, pauli_g, pauli_b, rgb_vmax=None):
     pauli_b_n = np.clip(pauli_b / rgb_vmax[2], a_min=0, a_max=1)
     return pauli_r_n, pauli_g_n, pauli_b_n
 
+
 def slc_to_pauli_rgb(slc_hh, slc_hv, slc_vh, slc_vv, window_az, window_rg, rgb_vmax=None):
     """
     Transform SLCs into Pauli RGB channels.
@@ -24,7 +27,7 @@ def slc_to_pauli_rgb(slc_hh, slc_hv, slc_vh, slc_vv, window_az, window_rg, rgb_v
         window_az, window_rg - multilook window in pixels for azimuth and range
         rgb_vmax - optional color max values, clipping is performed according to clip_pauli_rgb(r, g, b, rgb_vmax)
     Returns:
-        r, g, b - Pauli RGB values, same shape as the SLCs, float values from 0 to 1 
+        r, g, b - Pauli RGB values, same shape as the SLCs, float values from 0 to 1
     Usage:
         r, g, b = slc_to_pauli_rgb(hh, hv, vh, vv, window_az=5, window_rg=5, rgb_vmax=(red_max, green_max, blue_max))
     To plot a 2D image with matplotlib, stack the channels along the last axis:
@@ -35,6 +38,7 @@ def slc_to_pauli_rgb(slc_hh, slc_hv, slc_vh, slc_vv, window_az, window_rg, rgb_v
     pauli_g = uniform_filter(np.abs(slc_hv + slc_vh), (window_az, window_rg), mode="constant", cval=0)
     pauli_b = uniform_filter(np.abs(slc_hh + slc_vv), (window_az, window_rg), mode="constant", cval=0)
     return _clip_pauli_rgb(pauli_r, pauli_g, pauli_b, rgb_vmax)
+
 
 def coherency_matrix_to_pauli_rgb(t3, rgb_vmax=None):
     """

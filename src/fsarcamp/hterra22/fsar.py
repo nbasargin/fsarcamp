@@ -2,6 +2,7 @@ import pathlib
 import fsarcamp as fc
 from fsarcamp import campaign_utils
 
+
 class HTERRA22Campaign:
     def __init__(self, campaign_folder):
         self.name = "HTERRA 22"
@@ -13,17 +14,25 @@ class HTERRA22Campaign:
         return HTERRA22Pass(self.campaign_folder, pass_name, band, master_name)
 
     def get_pauli_rgb_max(self, band):
-        """ Get the max cutoff values for the Pauli RGB images, for each channel (R, G, B). """
+        """Get the max cutoff values for the Pauli RGB images, for each channel (R, G, B)."""
         return {"C": (0.55, 0.48, 0.95), "L": (0.30, 0.20, 0.49)}[band]
 
     def _pass_hierarchy(self):
-        """ Nested dictionary: band -> master passes -> coregistered passes """
+        """Nested dictionary: band -> master passes -> coregistered passes"""
         cl_passes = {
             "22hterra0104": (
                 # standard PolInSAR coregistered passes (same flight)
-                "22hterra0102", "22hterra0103", "22hterra0115",
+                "22hterra0102",
+                "22hterra0103",
+                "22hterra0115",
                 # additional coregistered passes (between different flights)
-                "22hterra0204", "22hterra0304", "22hterra0404", "22hterra0504", "22hterra0604", "22hterra0704", "22hterra0804",
+                "22hterra0204",
+                "22hterra0304",
+                "22hterra0404",
+                "22hterra0504",
+                "22hterra0604",
+                "22hterra0704",
+                "22hterra0804",
             ),
             "22hterra0204": ("22hterra0202", "22hterra0203", "22hterra0215", "22hterra0216", "22hterra0217"),
             "22hterra0304": ("22hterra0302", "22hterra0303", "22hterra0315"),
@@ -35,8 +44,9 @@ class HTERRA22Campaign:
         }
         return {
             "C": cl_passes,
-            "L": cl_passes, # a few more available for L band but not included here
+            "L": cl_passes,  # a few more available for L band but not included here
         }
+
 
 class HTERRA22Pass:
     def __init__(self, campaign_folder, pass_name, band, master_name=None):
@@ -60,14 +70,16 @@ class HTERRA22Pass:
         Polarization is ignored for the HTERRA 22 campaign.
         """
         rgi_folder, inf_folder, gtc_folder, try_suffix = self._get_path_parts()
-        return fc.mrrat(rgi_folder / "RGI-SR"/ f"incidence_{self.pass_name}_{self.band}_{try_suffix}.rat")
+        return fc.mrrat(rgi_folder / "RGI-SR" / f"incidence_{self.pass_name}_{self.band}_{try_suffix}.rat")
 
     def load_rgi_params(self, pol="hh"):
         """
         Load radar parameters from the RGI folder. Default polarization is "hh".
         """
         rgi_folder, inf_folder, gtc_folder, try_suffix = self._get_path_parts()
-        return campaign_utils.parse_xml_parameters(rgi_folder / "RGI-RDP" / f"pp_{self.pass_name}_{self.band}{pol}_{try_suffix}.xml")
+        return campaign_utils.parse_xml_parameters(
+            rgi_folder / "RGI-RDP" / f"pp_{self.pass_name}_{self.band}{pol}_{try_suffix}.xml"
+        )
 
     # INF folder
 
@@ -76,7 +88,9 @@ class HTERRA22Pass:
         Load coregistered SLC in specified polarization ("hh", "hv", "vh", "vv") from the INF folder.
         """
         rgi_folder, inf_folder, gtc_folder, try_suffix = self._get_path_parts()
-        return fc.mrrat(inf_folder / "INF-SR" / f"slc_coreg_{self.master_name}_{self.pass_name}_{self.band}{pol}_{try_suffix}.rat")
+        return fc.mrrat(
+            inf_folder / "INF-SR" / f"slc_coreg_{self.master_name}_{self.pass_name}_{self.band}{pol}_{try_suffix}.rat"
+        )
 
     def load_inf_pha_dem(self, pol=None):
         """
@@ -86,7 +100,9 @@ class HTERRA22Pass:
         Polarization is ignored for the HTERRA 22 campaign.
         """
         rgi_folder, inf_folder, gtc_folder, try_suffix = self._get_path_parts()
-        return fc.mrrat(inf_folder / "INF-SR" / f"pha_dem_{self.master_name}_{self.pass_name}_{self.band}_{try_suffix}.rat")
+        return fc.mrrat(
+            inf_folder / "INF-SR" / f"pha_dem_{self.master_name}_{self.pass_name}_{self.band}_{try_suffix}.rat"
+        )
 
     def load_inf_pha_fe(self, pol=None):
         """
@@ -95,28 +111,36 @@ class HTERRA22Pass:
         Polarization is ignored for the HTERRA 22 campaign.
         """
         rgi_folder, inf_folder, gtc_folder, try_suffix = self._get_path_parts()
-        return fc.mrrat(inf_folder / "INF-SR" / f"pha_fe_{self.master_name}_{self.pass_name}_{self.band}_{try_suffix}.rat")
+        return fc.mrrat(
+            inf_folder / "INF-SR" / f"pha_fe_{self.master_name}_{self.pass_name}_{self.band}_{try_suffix}.rat"
+        )
 
     def load_inf_kz(self, pol):
         """
         Load interferometric kz.
         """
         rgi_folder, inf_folder, gtc_folder, try_suffix = self._get_path_parts()
-        return fc.mrrat(inf_folder / "INF-SR" / f"kz_{self.master_name}_{self.pass_name}_{self.band}{pol}_{try_suffix}.rat")
+        return fc.mrrat(
+            inf_folder / "INF-SR" / f"kz_{self.master_name}_{self.pass_name}_{self.band}{pol}_{try_suffix}.rat"
+        )
 
     def load_inf_params(self, pol="hh"):
         """
         Load radar parameters from the INF folder. Default polarization is "hh".
         """
         rgi_folder, inf_folder, gtc_folder, try_suffix = self._get_path_parts()
-        return campaign_utils.parse_xml_parameters(inf_folder / "INF-RDP" / f"pp_{self.pass_name}_{self.band}{pol}_{try_suffix}.xml")
+        return campaign_utils.parse_xml_parameters(
+            inf_folder / "INF-RDP" / f"pp_{self.pass_name}_{self.band}{pol}_{try_suffix}.xml"
+        )
 
     def load_inf_insar_params(self, pol="hh"):
         """
         Load insar radar parameters from the INF folder. Default polarization is "hh".
         """
         rgi_folder, inf_folder, gtc_folder, try_suffix = self._get_path_parts()
-        return campaign_utils.parse_xml_parameters(inf_folder / "INF-RDP" / f"ppinsar_{self.master_name}_{self.pass_name}_{self.band}{pol}_{try_suffix}.xml")
+        return campaign_utils.parse_xml_parameters(
+            inf_folder / "INF-RDP" / f"ppinsar_{self.master_name}_{self.pass_name}_{self.band}{pol}_{try_suffix}.xml"
+        )
 
     # GTC folder
 

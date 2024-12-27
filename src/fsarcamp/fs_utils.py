@@ -1,6 +1,7 @@
 import platform
 import pathlib
 
+
 def get_polinsar_folder():
     """
     Get the default path to the DLR-HR-RKO Pol-InSAR / InfoRetrieval folder.

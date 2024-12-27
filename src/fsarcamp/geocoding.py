@@ -1,16 +1,18 @@
 """
 Functions related to geocoding and pixel lookup.
 """
+
 import numpy as np
 import fsarcamp as fc
 import pyproj
 import shapely
 import shapely.ops as ops
 
+
 def nearest_neighbor_lookup(img: np.ndarray, lut_az, lut_rg, inv_value=np.nan) -> np.ndarray:
     """
     Lookup pixels in the image (img) given the indices (lut_az, lut_rg).
-    Nearest neighbor lookup is used which is faster but less accurate than interpolation.    
+    Nearest neighbor lookup is used which is faster but less accurate than interpolation.
     This function can be used to geocode data from the SLC to geographic coordinates using the F-SAR lookup tables (LUT).
 
     Parameters:
@@ -33,7 +35,9 @@ def nearest_neighbor_lookup(img: np.ndarray, lut_az, lut_rg, inv_value=np.nan) -
     lut_az = np.rint(lut_az)
     # determine invalid positions
     max_az, max_rg = img.shape[0], img.shape[1]
-    invalid_positions = np.isnan(lut_az) | np.isnan(lut_rg) | (lut_az < 0) | (lut_az >= max_az) | (lut_rg < 0) | (lut_rg >= max_rg)
+    invalid_positions = (
+        np.isnan(lut_az) | np.isnan(lut_rg) | (lut_az < 0) | (lut_az >= max_az) | (lut_rg < 0) | (lut_rg >= max_rg)
+    )
     # set invalid positions to 0
     lut_az[invalid_positions] = 0
     lut_rg[invalid_positions] = 0
@@ -46,7 +50,9 @@ def nearest_neighbor_lookup(img: np.ndarray, lut_az, lut_rg, inv_value=np.nan) -
     geocoded[invalid_positions] = inv_value
     return geocoded
 
+
 # geocoding coordinate arrays
+
 
 def geocode_coords_longlat_to_eastnorth(longitude, latitude, lut_projection: pyproj.Proj):
     """
@@ -57,6 +63,7 @@ def geocode_coords_longlat_to_eastnorth(longitude, latitude, lut_projection: pyp
     longlat_to_eastnorth = pyproj.Transformer.from_proj(proj_longlat, lut_projection)
     easting, northing = longlat_to_eastnorth.transform(longitude, latitude)
     return easting, northing
+
 
 def geocode_coords_eastnorth_to_lutindices(easting, northing, lut: fc.Geo2SlantRange):
     """
@@ -69,6 +76,7 @@ def geocode_coords_eastnorth_to_lutindices(easting, northing, lut: fc.Geo2SlantR
     lut_n = np.rint((northing - lut.min_north) / lut.pixel_spacing_north)
     lut_e = np.rint((easting - lut.min_east) / lut.pixel_spacing_east)
     return lut_n, lut_e
+
 
 def geocode_coords_lutindices_to_azrg(lut_n, lut_e, lut: fc.Geo2SlantRange):
     """
@@ -87,8 +95,8 @@ def geocode_coords_lutindices_to_azrg(lut_n, lut_e, lut: fc.Geo2SlantRange):
     invalid_idx = np.isnan(lut_n) | np.isnan(lut_e) | (lut_n < 0) | (lut_n >= max_n) | (lut_e < 0) | (lut_e >= max_e)
     if np.isscalar(invalid_idx):
         if invalid_idx:
-            return np.nan, np.nan # only a single position provided and it is invalid
-    else: # not scalar
+            return np.nan, np.nan  # only a single position provided and it is invalid
+    else:  # not scalar
         lut_n[invalid_idx] = 0
         lut_e[invalid_idx] = 0
     # get azimuth and range positions
@@ -100,11 +108,12 @@ def geocode_coords_lutindices_to_azrg(lut_n, lut_e, lut: fc.Geo2SlantRange):
     invalid_results = invalid_idx | (az < 0) | (rg < 0)
     if np.isscalar(invalid_results):
         if invalid_results:
-            return np.nan, np.nan # only a single position computed and it is invalid
-    else: # not scalar
+            return np.nan, np.nan  # only a single position computed and it is invalid
+    else:  # not scalar
         az[invalid_results] = np.nan
         rg[invalid_results] = np.nan
     return az, rg
+
 
 def geocode_coords_longlat_to_azrg(longitude, latitude, lut: fc.Geo2SlantRange):
     easting, northing = geocode_coords_longlat_to_eastnorth(longitude, latitude, lut.projection)
@@ -112,26 +121,31 @@ def geocode_coords_longlat_to_azrg(longitude, latitude, lut: fc.Geo2SlantRange):
     az, rg = fc.geocode_coords_lutindices_to_azrg(lut_northing, lut_easting, lut)
     return az, rg
 
+
 # geocoding shapely geometry
+
 
 def geocode_geometry_longlat_to_eastnorth(geometry_longlat: shapely.Geometry, lut_projection: pyproj.Proj):
     proj_longlat = pyproj.Proj(proj="longlat", ellps="WGS84", datum="WGS84")
     longlat_to_eastnorth = pyproj.Transformer.from_proj(proj_longlat, lut_projection)
     return ops.transform(longlat_to_eastnorth.transform, geometry_longlat)
 
+
 def geocode_geometry_eastnorth_to_lutindices(geometry_eastnorth: shapely.Geometry, lut: fc.Geo2SlantRange):
     eastnorth_to_lutindices = lambda e, n: geocode_coords_eastnorth_to_lutindices(e, n, lut)
     try:
         return ops.transform(eastnorth_to_lutindices, geometry_eastnorth)
     except:
-        return None # invalid shapes (e.g. outside LUT or SLC) throw errors
+        return None  # invalid shapes (e.g. outside LUT or SLC) throw errors
+
 
 def geocode_geometry_lutindices_to_azrg(geometry_lutindices: shapely.Geometry, lut: fc.Geo2SlantRange):
     lutindices_to_azrg = lambda lut_n, lut_e: geocode_coords_lutindices_to_azrg(lut_n, lut_e, lut)
     try:
         return ops.transform(lutindices_to_azrg, geometry_lutindices)
     except:
-        return None # invalid shapes (e.g. outside LUT or SLC) throw errors
+        return None  # invalid shapes (e.g. outside LUT or SLC) throw errors
+
 
 def geocode_geometry_longlat_to_azrg(geometry_longlat: shapely.Geometry, lut: fc.Geo2SlantRange):
     shape_eastnorth = geocode_geometry_longlat_to_eastnorth(geometry_longlat, lut.projection)

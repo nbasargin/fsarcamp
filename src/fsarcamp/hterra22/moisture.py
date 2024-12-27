@@ -1,11 +1,13 @@
 """
 Data loader for soil moisture ground measurements for the HTERRA 2022 campaign.
 """
+
 import pathlib
 from datetime import datetime
 import pandas as pd
 import fsarcamp as fc
 import fsarcamp.hterra22 as ht22
+
 
 class HTERRA22Moisture:
     def __init__(self, data_folder, hterra22campaign: ht22.HTERRA22Campaign):
@@ -137,7 +139,7 @@ class HTERRA22Moisture:
                 ht22.JUN_16_PM: [
                     ("CREA_MAIS1", "2022-06-16 14:47:00", "2022-06-16 14:54:00"),
                     ("CREA_MAIS2", "2022-06-16 14:14:00", "2022-06-16 14:24:00"),
-                ]
+                ],
             },
             ht22.CAIONE_AA: {
                 ht22.JUN_15_AM: [
@@ -200,16 +202,18 @@ class HTERRA22Moisture:
     def _read_moisture_csv(self, file_path):
         df = pd.read_csv(file_path)
         df = df.dropna()
-        df = df.rename(columns={
-            "DATE_TIME": "date_time",
-            "POINT_ID": "point_id",
-            "FIELD": "field",
-            "LATITUDE": "latitude",
-            "LONGITUDE": "longitude",
-            # soil moisture is either available as SM_CAL_ALL or SM_CAL
-            "SM_CAL_ALL": "soil_moisture",
-            "SM_CAL": "soil_moisture",
-        })
+        df = df.rename(
+            columns={
+                "DATE_TIME": "date_time",
+                "POINT_ID": "point_id",
+                "FIELD": "field",
+                "LATITUDE": "latitude",
+                "LONGITUDE": "longitude",
+                # soil moisture is either available as SM_CAL_ALL or SM_CAL
+                "SM_CAL_ALL": "soil_moisture",
+                "SM_CAL": "soil_moisture",
+            }
+        )
         df["date_time"] = pd.to_datetime(df["date_time"])
         return df
 
@@ -243,25 +247,38 @@ class HTERRA22Moisture:
         """
         date_from = datetime.fromisoformat(iso_date_from)
         date_to = datetime.fromisoformat(iso_date_to)
-        sm_df_filtered = sm_df[(sm_df["field"] == field_stripe) & (sm_df["date_time"] >= date_from) & (sm_df["date_time"] <= date_to)]
+        sm_df_filtered = sm_df[
+            (sm_df["field"] == field_stripe) & (sm_df["date_time"] >= date_from) & (sm_df["date_time"] <= date_to)
+        ]
         return sm_df_filtered
 
     def _convert_region_input(self, region):
-        if region is None: # all regions
+        if region is None:  # all regions
             return [
-                ht22.CREA_BS_QU, ht22.CREA_DW, ht22.CREA_SF, ht22.CREA_MA,
-                ht22.CAIONE_DW, ht22.CAIONE_AA, ht22.CAIONE_MA,
+                ht22.CREA_BS_QU,
+                ht22.CREA_DW,
+                ht22.CREA_SF,
+                ht22.CREA_MA,
+                ht22.CAIONE_DW,
+                ht22.CAIONE_AA,
+                ht22.CAIONE_MA,
             ]
-        else: # single region
+        else:  # single region
             return [region]
 
     def _convert_time_period_input(self, time_period):
-        if time_period is None: # all time periods
+        if time_period is None:  # all time periods
             return [
-                ht22.APR_28_AM, ht22.APR_28_PM, ht22.APR_29_AM, ht22.APR_29_PM,
-                ht22.JUN_15_AM, ht22.JUN_15_PM, ht22.JUN_16_AM, ht22.JUN_16_PM,
+                ht22.APR_28_AM,
+                ht22.APR_28_PM,
+                ht22.APR_29_AM,
+                ht22.APR_29_PM,
+                ht22.JUN_15_AM,
+                ht22.JUN_15_PM,
+                ht22.JUN_16_AM,
+                ht22.JUN_16_PM,
             ]
-        else: # single time period
+        else:  # single time period
             return [time_period]
 
     def load_soil_moisture_points(self, band=None, region=None, time_period=None):
@@ -288,15 +305,29 @@ class HTERRA22Moisture:
         # read all points
         dfs = []
         for filename in [
-            "CA1_DW_24.csv", "CA1_DW_27.csv", "CA1_DW_28.csv", "CA1_DW_29.csv",
-            "CA2_DW_24.csv", "CA2_DW_27.csv", "CA2_DW_28.csv", "CA2_DW_29.csv"
+            "CA1_DW_24.csv",
+            "CA1_DW_27.csv",
+            "CA1_DW_28.csv",
+            "CA1_DW_29.csv",
+            "CA2_DW_24.csv",
+            "CA2_DW_27.csv",
+            "CA2_DW_28.csv",
+            "CA2_DW_29.csv",
         ]:
             april_caione_folder = self.data_folder / "April22/soil_moisture_sensors/CAIONE"
             dfs.append(self._read_moisture_csv(april_caione_folder / filename))
         for filename in ["CREA_BS_APRIL.csv", "CREA_DW26.csv", "CREA_DW27.csv", "CREA_DW28.csv", "CREA_DW29.csv"]:
             april_crea_folder = self.data_folder / "April22/soil_moisture_sensors/CREA"
             dfs.append(self._read_moisture_csv(april_crea_folder / filename))
-        for filename in ["CA_AA_1.csv", "CA_AA_2.csv", "CA_AA_3.csv", "CA_MA_1.csv", "CA_MA_2.csv", "CA_MA_3.csv", "CA_MA_4.csv"]:
+        for filename in [
+            "CA_AA_1.csv",
+            "CA_AA_2.csv",
+            "CA_AA_3.csv",
+            "CA_MA_1.csv",
+            "CA_MA_2.csv",
+            "CA_MA_3.csv",
+            "CA_MA_4.csv",
+        ]:
             june_caione_folder = self.data_folder / "June22/soil_moisture_sensors/CAIONE"
             dfs.append(self._read_moisture_csv(june_caione_folder / filename))
         for filename in ["CREA_MA_1.csv", "CREA_MA_2.csv", "CREA_QUINOA.csv", "CREA_SF.csv"]:
@@ -318,9 +349,7 @@ class HTERRA22Moisture:
                 reg_time_filters = reg_dict.get(per, None)
                 if reg_time_filters is not None:
                     filters.extend(reg_time_filters)
-        dataframes = [
-            self._filter_subset(df, *reg_time_filter) for reg_time_filter in filters
-        ]
+        dataframes = [self._filter_subset(df, *reg_time_filter) for reg_time_filter in filters]
         if len(dataframes) == 0:
             result = pd.DataFrame(columns=["date_time", "point_id", "field", "longitude", "latitude", "soil_moisture"])
         else:

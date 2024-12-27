@@ -1,6 +1,7 @@
 """
 Data loader for soil moisture ground measurements for the HTERRA 2022 campaign.
 """
+
 import pathlib
 from datetime import datetime
 import pandas as pd
@@ -8,6 +9,7 @@ import geopandas as gpd
 import shapely
 import fsarcamp as fc
 import fsarcamp.hterra22 as ht22
+
 
 class HTERRA22MoistureV2:
     def __init__(self, data_folder):
@@ -18,20 +20,22 @@ class HTERRA22MoistureV2:
         "/data/HR_Data/Pol-InSAR_InfoRetrieval/Ground_truth/HTerra_soil_2022/DataPackage_final"
         """
         self.data_folder = pathlib.Path(data_folder)
-        
+
     def _read_moisture_csv(self, file_path):
         df = pd.read_csv(file_path)
         df = df.dropna()
-        df = df.rename(columns={
-            "DATE_TIME": "date_time",
-            "POINT_ID": "point_id",
-            "FIELD": "field",
-            "LATITUDE": "latitude",
-            "LONGITUDE": "longitude",
-            # soil moisture is either available as SM_CAL_ALL or SM_CAL
-            "SM_CAL_ALL": "soil_moisture",
-            "SM_CAL": "soil_moisture",
-        })
+        df = df.rename(
+            columns={
+                "DATE_TIME": "date_time",
+                "POINT_ID": "point_id",
+                "FIELD": "field",
+                "LATITUDE": "latitude",
+                "LONGITUDE": "longitude",
+                # soil moisture is either available as SM_CAL_ALL or SM_CAL
+                "SM_CAL_ALL": "soil_moisture",
+                "SM_CAL": "soil_moisture",
+            }
+        )
         df["date_time"] = pd.to_datetime(df["date_time"])
         return df
 
@@ -46,7 +50,9 @@ class HTERRA22MoistureV2:
         """
         date_from = datetime.fromisoformat(iso_date_from)
         date_to = datetime.fromisoformat(iso_date_to)
-        sm_df_filtered = sm_df[(sm_df["field"] == field_stripe) & (sm_df["date_time"] >= date_from) & (sm_df["date_time"] <= date_to)]
+        sm_df_filtered = sm_df[
+            (sm_df["field"] == field_stripe) & (sm_df["date_time"] >= date_from) & (sm_df["date_time"] <= date_to)
+        ]
         return sm_df_filtered
 
     def load_soil_moisture_points(self):
@@ -62,15 +68,29 @@ class HTERRA22MoistureV2:
         # read all points
         dfs = []
         for filename in [
-            "CA1_DW_24.csv", "CA1_DW_27.csv", "CA1_DW_28.csv", "CA1_DW_29.csv",
-            "CA2_DW_24.csv", "CA2_DW_27.csv", "CA2_DW_28.csv", "CA2_DW_29.csv"
+            "CA1_DW_24.csv",
+            "CA1_DW_27.csv",
+            "CA1_DW_28.csv",
+            "CA1_DW_29.csv",
+            "CA2_DW_24.csv",
+            "CA2_DW_27.csv",
+            "CA2_DW_28.csv",
+            "CA2_DW_29.csv",
         ]:
             april_caione_folder = self.data_folder / "April22/soil_moisture_sensors/CAIONE"
             dfs.append(self._read_moisture_csv(april_caione_folder / filename))
         for filename in ["CREA_BS_APRIL.csv", "CREA_DW26.csv", "CREA_DW27.csv", "CREA_DW28.csv", "CREA_DW29.csv"]:
             april_crea_folder = self.data_folder / "April22/soil_moisture_sensors/CREA"
             dfs.append(self._read_moisture_csv(april_crea_folder / filename))
-        for filename in ["CA_AA_1.csv", "CA_AA_2.csv", "CA_AA_3.csv", "CA_MA_1.csv", "CA_MA_2.csv", "CA_MA_3.csv", "CA_MA_4.csv"]:
+        for filename in [
+            "CA_AA_1.csv",
+            "CA_AA_2.csv",
+            "CA_AA_3.csv",
+            "CA_MA_1.csv",
+            "CA_MA_2.csv",
+            "CA_MA_3.csv",
+            "CA_MA_4.csv",
+        ]:
             june_caione_folder = self.data_folder / "June22/soil_moisture_sensors/CAIONE"
             dfs.append(self._read_moisture_csv(june_caione_folder / filename))
         for filename in ["CREA_MA_1.csv", "CREA_MA_2.csv", "CREA_QUINOA.csv", "CREA_SF.csv"]:
@@ -84,12 +104,12 @@ class HTERRA22MoistureV2:
         Filter the points by the specified period.
         The period is specified by name, see `fsarcamp.hterra22.dates` for allowed values.
         """
-        filter_dict = {            
+        filter_dict = {
             ht22.APR_28_AM: [
                 ("CREA_BARESOIL", "2022-04-28 08:45:00", "2022-04-28 11:09:00"),
                 ("CREA_DURUMWHEAT26", "2022-04-28 10:42:00", "2022-04-28 11:34:00"),
                 ("CREA_DURUMWHEAT27", "2022-04-28 09:42:00", "2022-04-28 10:40:00"),
-                ("CREA_DURUMWHEAT29", "2022-04-28 08:56:00", "2022-04-28 09:41:00"),                
+                ("CREA_DURUMWHEAT29", "2022-04-28 08:56:00", "2022-04-28 09:41:00"),
                 ("CAIONE1_DURUMWHEAT29", "2022-04-28 09:10:00", "2022-04-28 10:28:00"),
                 ("CAIONE1_DURUMWHEAT24", "2022-04-28 13:25:00", "2022-04-28 13:50:00"),
                 ("CAIONE1_DURUMWHEAT27", "2022-04-28 11:48:00", "2022-04-28 12:52:00"),
@@ -110,7 +130,7 @@ class HTERRA22MoistureV2:
                 ("CAIONE2_DURUMWHEAT27", "2022-04-28 16:31:00", "2022-04-28 16:59:00"),
             ],
             ht22.APR_29_AM: [
-                ("CREA_BARESOIL", "2022-04-29 08:43:00", "2022-04-29 10:28:00"),                
+                ("CREA_BARESOIL", "2022-04-29 08:43:00", "2022-04-29 10:28:00"),
                 ("CREA_DURUMWHEAT26", "2022-04-29 10:32:00", "2022-04-29 11:21:00"),
                 ("CREA_DURUMWHEAT27", "2022-04-29 09:40:00", "2022-04-29 10:31:00"),
                 ("CREA_DURUMWHEAT28", "2022-04-29 08:50:00", "2022-04-29 09:38:00"),
@@ -122,7 +142,7 @@ class HTERRA22MoistureV2:
                 ("CAIONE2_DURUMWHEAT28", "2022-04-29 09:06:00", "2022-04-29 09:43:00"),
             ],
             ht22.APR_29_PM: [
-                ("CREA_BARESOIL", "2022-04-29 13:30:00", "2022-04-29 15:01:00"),                
+                ("CREA_BARESOIL", "2022-04-29 13:30:00", "2022-04-29 15:01:00"),
                 ("CREA_DURUMWHEAT26", "2022-04-29 15:07:00", "2022-04-29 15:55:00"),
                 ("CREA_DURUMWHEAT27", "2022-04-29 14:14:00", "2022-04-29 15:06:00"),
                 ("CREA_DURUMWHEAT28", "2022-04-29 13:35:00", "2022-04-29 14:09:00"),
@@ -187,9 +207,7 @@ class HTERRA22MoistureV2:
             ],
         }
         filters = filter_dict[period_name]
-        dataframes = [
-            self._filter_subset(points, *reg_time_filter) for reg_time_filter in filters
-        ]
+        dataframes = [self._filter_subset(points, *reg_time_filter) for reg_time_filter in filters]
         result = pd.concat(dataframes, ignore_index=True)
         return result
 
@@ -210,7 +228,7 @@ class HTERRA22MoistureV2:
             "lut_northing", "lut_easting" - pixel indices within the LUT
             "azimuth", "range" - pixel indices within the SLC
         """
-        fsar_pass = campaign.get_pass("22hterra0104", band) # same coordinate system for all flights and passes
+        fsar_pass = campaign.get_pass("22hterra0104", band)  # same coordinate system for all flights and passes
         lut = fsar_pass.load_gtc_sr2geo_lut()
         latitude = points["latitude"].to_numpy()
         longitude = points["longitude"].to_numpy()

@@ -4,11 +4,15 @@ import matplotlib.pyplot as plt
 import fsarcamp as fc
 import fsarcamp.cropex14 as cr14
 
+
 def example_filter_fields_by_long_lat():
     """
     Look up a field by longitude latitude coordinates.
     """
-    shapefile_path = fc.get_polinsar_folder() / "Ground_truth/Wallerfing_campaign_May_August_2014/kmz-files/Land_use_Wallerfing_2014_shp+kmz/flugstreifen_wallerfing_feka2014.dbf"
+    shapefile_path = (
+        fc.get_polinsar_folder()
+        / "Ground_truth/Wallerfing_campaign_May_August_2014/kmz-files/Land_use_Wallerfing_2014_shp+kmz/flugstreifen_wallerfing_feka2014.dbf"
+    )
     campaign = cr14.CROPEX14Campaign(fc.get_polinsar_folder() / "01_projects/CROPEX/CROPEX14")
     field_map = cr14.CROPEX14FieldMap(shapefile_path, campaign)
     pass_name, band = "14cropex0203", "C"
@@ -19,30 +23,38 @@ def example_filter_fields_by_long_lat():
     fields = fields[fields["poly_longitude_latitude"].contains(point)]
     print(fields)
 
+
 def example_load_field_by_id():
     """
     Look up a field by ID.
     """
-    shapefile_path = fc.get_polinsar_folder() / "Ground_truth/Wallerfing_campaign_May_August_2014/kmz-files/Land_use_Wallerfing_2014_shp+kmz/flugstreifen_wallerfing_feka2014.dbf"
+    shapefile_path = (
+        fc.get_polinsar_folder()
+        / "Ground_truth/Wallerfing_campaign_May_August_2014/kmz-files/Land_use_Wallerfing_2014_shp+kmz/flugstreifen_wallerfing_feka2014.dbf"
+    )
     campaign = cr14.CROPEX14Campaign(fc.get_polinsar_folder() / "01_projects/CROPEX/CROPEX14")
     field_map = cr14.CROPEX14FieldMap(shapefile_path, campaign)
     pass_name, band = "14cropex0203", "C"
     fields = field_map.load_field_by_id(cr14.CORN_C2, pass_name, band)
     print(fields)
 
+
 def example_crop_mask_raster():
-    shapefile_path = fc.get_polinsar_folder() / "Ground_truth/Wallerfing_campaign_May_August_2014/kmz-files/Land_use_Wallerfing_2014_shp+kmz/flugstreifen_wallerfing_feka2014.dbf"
+    shapefile_path = (
+        fc.get_polinsar_folder()
+        / "Ground_truth/Wallerfing_campaign_May_August_2014/kmz-files/Land_use_Wallerfing_2014_shp+kmz/flugstreifen_wallerfing_feka2014.dbf"
+    )
     campaign = cr14.CROPEX14Campaign(fc.get_polinsar_folder() / "01_projects/CROPEX/CROPEX14")
     field_map = cr14.CROPEX14FieldMap(shapefile_path, campaign)
     pass_name, band = "14cropex0203", "C"
     fields = field_map.load_fields(pass_name, band)
     # filter fields that contain a single crop type
     fields = fields[fields["num_crop_types"] == 1]
-    # filter fields that contain a specific crop    
-    crop_code = 411 # Silage maize (corn)
+    # filter fields that contain a specific crop
+    crop_code = 411  # Silage maize (corn)
     fields = fields[fields["crop_code_1"] == crop_code]
     # add a data column that will be rasterized, note the float dtype (allow NaNs)
-    fields["raster_data"] = 1.0 # fill all matching fields with 1.0
+    fields["raster_data"] = 1.0  # fill all matching fields with 1.0
     # create rasters in LUT and SLC coordinates
     field_lut_raster = field_map.create_field_lut_raster(fields, "raster_data", pass_name, band, invalid_value=np.nan)
     field_slc_raster = field_map.create_field_slc_raster(fields, "raster_data", pass_name, band, invalid_value=np.nan)
@@ -68,6 +80,7 @@ def example_crop_mask_raster():
     plt.imshow(field_lut_raster, vmin=0, vmax=1, cmap="jet")
     plt.savefig("visualization/crop_mask_lut.png", dpi=300)
     plt.close("all")
+
 
 if __name__ == "__main__":
     example_load_field_by_id()

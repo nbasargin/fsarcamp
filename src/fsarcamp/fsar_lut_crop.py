@@ -1,8 +1,10 @@
 """
 Data cropping in SLC and LUT coordinates for efficient processing and geocoding of small regions.
 """
+
 import numpy as np
 import fsarcamp as fc
+
 
 class GeoCrop:
     """
@@ -14,6 +16,7 @@ class GeoCrop:
     - process only the relevant patch in the SLC geometry (outside of this class)
     - geocode the processed data
     """
+
     def __init__(self, lut: fc.Geo2SlantRange, min_north_idx, max_north_idx, min_east_idx, max_east_idx):
         """
         Crop LUT to a smaller geographical region.
@@ -67,7 +70,7 @@ class GeoCrop:
         Crop a 1D image radar image (SLC coordinates) along the range axis.
         Usef for some older campaigns, e.g., where fe phase image only varies along the range and has no azimuth indices.
         """
-        return np.copy(radar_image[self.min_rg_idx:self.max_rg_idx])
+        return np.copy(radar_image[self.min_rg_idx : self.max_rg_idx])
 
     def geocode_cropped_radar_image(self, cropped_radar_image):
         """
