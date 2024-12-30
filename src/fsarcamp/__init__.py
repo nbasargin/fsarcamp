@@ -7,7 +7,7 @@ Data loaders for F-SAR campaigns, including:
 
 # Re-exporting internal functionality
 from .common import complex_coherence
-from .ste_io import rrat, mrrat, RatFile
+from .ste_io.ste_io import rrat, mrrat, RatFile
 from .multilook import (
     convert_meters_to_pixels,
     convert_pixels_to_meters,
