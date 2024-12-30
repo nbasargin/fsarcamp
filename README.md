@@ -33,7 +33,8 @@ Following data loaders are currently supported:
 - `CROPEX14Campaign`: F-SAR data loader (SLC, incidence, lookup tables, etc.)
 - `CROPEX14Biomass`: Point-wise biomass ground measurements collected by the ground teams over specific fields
 - `CROPEX14Moisture`: Point-wise soil moisture ground measurements collected by the ground teams over specific fields
-- `CROPEX14FieldMap`: Field polygons and crop types
+- `CROPEX14Regions`: Region definitions and geocoding for the relevant fields (as polygons)
+- `CROPEX14FieldMap`: Field polygons and crop types, reads an external SHP file
 
 ### HTERRA 2022
 
@@ -53,3 +54,10 @@ Following data loaders are currently supported:
 - `HTERRA22Campaign`: F-SAR data loader (SLC, incidence, lookup tables, etc.)
 - `HTERRA22Moisture`: Point-wise soil moisture ground measurements collected by the ground teams over specific fields
 - `HTERRA22MoistureInterpolated`: Interpolation of soil moisture ground measurements to a raster in SLC or LUT coordinates
+- `HTERRA22Regions`: Region definitions and geocoding for the relevant fields (as polygons)
+
+
+# Notes
+
+This repository includes third party code obtained from `https://github.com/birgander2/PyRAT` to read RAT files.
+Third party code is located in the `fsarcamp/src/fsarcamp/ste_io` folder and is licensed under the MPL-2.0 license.
