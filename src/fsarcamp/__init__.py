@@ -25,3 +25,4 @@ from .geocoding import geocode_coords_longlat_to_eastnorth, geocode_coords_eastn
 from .geocoding import geocode_coords_lutindices_to_azrg, geocode_coords_longlat_to_azrg
 from .geocoding import geocode_geometry_longlat_to_eastnorth, geocode_geometry_eastnorth_to_lutindices
 from .geocoding import geocode_geometry_lutindices_to_azrg, geocode_geometry_longlat_to_azrg
+from .geocoded_regions import GeocodedRegions
