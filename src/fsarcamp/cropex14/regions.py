@@ -31,7 +31,7 @@ SUGAR_BEET_SB2 = "SUGAR_BEET_SB2"
 CUCUMBERS_CU1 = "CUCUMBERS_CU1"  # cucumbers on the big field
 
 
-class CROPEX14Regions_v2(fc.GeocodedRegions):
+class CROPEX14Regions(fc.GeocodedRegions):
     def __init__(self):
         super().__init__()
         self.set_geometry_longlat(

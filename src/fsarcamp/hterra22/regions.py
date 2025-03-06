@@ -15,7 +15,7 @@ CAIONE_AA = "CAIONE_AA"  # Caione farm, alfalfa field in June
 CAIONE_MA = "CAIONE_MA"  # Caione farm, two adjacent maize (corn) fields in June
 
 
-class HTERRA22Regions_v2(fc.GeocodedRegions):
+class HTERRA22Regions(fc.GeocodedRegions):
     def __init__(self):
         super().__init__()
         self.set_geometry_longlat(
