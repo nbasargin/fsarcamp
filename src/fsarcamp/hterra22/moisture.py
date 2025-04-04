@@ -11,7 +11,7 @@ import fsarcamp as fc
 import fsarcamp.hterra22 as ht22
 
 
-class HTERRA22MoistureV2:
+class HTERRA22Moisture:
     def __init__(self, data_folder):
         """
         Data loader for soil moisture ground measurements for the HTERRA 2022 campaign.
