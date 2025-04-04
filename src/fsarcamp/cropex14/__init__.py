@@ -3,7 +3,7 @@ from .fsar import CROPEX14Campaign
 from .moisture import CROPEX14Moisture
 from .biomass import CROPEX14Biomass
 from .field_map import CROPEX14FieldMap
-from .regions import CROPEX14Regions, CROPEX14Regions_v2
+from .regions import CROPEX14Regions
 
 from .dates import APR_09, APR_10, APR_11, MAY_12, MAY_15, MAY_22, MAY_23
 from .dates import JUN_03, JUN_04, JUN_12, JUN_13, JUN_18, JUN_23, JUN_27
