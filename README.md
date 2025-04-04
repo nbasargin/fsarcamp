@@ -24,7 +24,7 @@ See the list of campaigns and the available data below.
 ### CROPEX 2014
 
 Campaign focusing on agricultural crops with many flights over 10 weeks.
-X-, C-, and L-band are available, some dates have several baselines allowing  tomography.
+X-, C-, and L-band are available, some dates have several baselines allowing tomography.
 
 Several fields have been monitored during the campaign.
 The measurement include crop height, water content, biomass, and soil moisture.
