@@ -1,5 +1,6 @@
 """
 Data loader for soil moisture ground measurements for the HTERRA 2022 campaign.
+Old deprecated implementation. Use 
 """
 
 import pathlib
@@ -9,7 +10,7 @@ import fsarcamp as fc
 import fsarcamp.hterra22 as ht22
 
 
-class HTERRA22Moisture:
+class HTERRA22MoistureOld:
     def __init__(self, data_folder, hterra22campaign: ht22.HTERRA22Campaign):
         """
         Data loader for soil moisture ground measurements for the HTERRA 2022 campaign.

@@ -9,7 +9,7 @@ import fsarcamp.hterra22 as ht22
 
 
 class HTERRA22MoistureInterpolated:
-    def __init__(self, moisture: ht22.HTERRA22Moisture):
+    def __init__(self, moisture: ht22.HTERRA22MoistureOld):
         """
         Interpolation of the soil moisture ground measurements to the SLC grid for the HTERRA 2022 campaign.
 
