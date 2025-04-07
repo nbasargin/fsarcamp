@@ -4,13 +4,14 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fsarcamp"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
   "numpy",
   "scipy",
   "shapely",
   "matplotlib",
   "pandas",
+  "openpyxl",
   "geopandas",
   "rasterio",
   "pyproj",
