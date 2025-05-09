@@ -4,29 +4,17 @@ import re
 import numpy as np
 import pandas as pd
 import pyproj
-import fsarcamp as fc
-import fsarcamp.cropex14 as cr14
 
 
 class CROPEX14Biomass:
-    def __init__(self, data_folder, cropex14campaign: cr14.CROPEX14Campaign, debug_logs=False):
+    def __init__(self, data_folder):
         """
         Data loader for biomass ground measurements for the CROPEX 2014 campaign.
-
-        Arguments:
-            data_folder: path to the data folder that contains the XLSX files with biomass measurements
-            cropex14campaign: reference to the F-SAR campaign, required to geocode points to the SLC coordinates
-
-        Usage example (data paths valid for DLR-HR server as of August 2024):
-            import fsarcamp as fc
-            import fsarcamp.cropex14 as cr14
-            campaign = cr14.CROPEX14Campaign(fc.get_polinsar_folder() / "01_projects/CROPEX/CROPEX14")
-            biomass_folder = fc.get_polinsar_folder() / "Ground_truth/Wallerfing_campaign_May_August_2014/Data/ground_measurements/biomass"
-            biomass = cr14.CROPEX14Biomass(biomass_folder, campaign)
+        `data_folder` defines the data folder that contains the XLSX files with biomass measurements.
+        The path on the DLR-HR server as of November 2024:
+        "/data/HR_Data/Pol-InSAR_InfoRetrieval/Ground_truth/Wallerfing_campaign_May_August_2014/Data/ground_measurements/biomass"
         """
         self.data_folder = pathlib.Path(data_folder)
-        self.cropex14campaign = cropex14campaign
-        self.debug_logs = debug_logs
 
     def _to_float(self, value):
         try:
@@ -37,34 +25,14 @@ class CROPEX14Biomass:
                     val1 = float(matches.group(1))
                     val2 = float(matches.group(2))
                     result = (val1 + val2) / 2
-                    if self.debug_logs:
-                        print(f"interpreting '{value}' as ({val1} + {val2}) / 2 = {result}")
                     return result
                 if re.match("^(\d+),(\d+)$", value):
                     # comma used as decimal separator
                     result = float(value.replace(",", "."))
-                    if self.debug_logs:
-                        print(f"interpreting '{value}' as {result}")
                     return result
             return float(value)
-        except:
+        except Exception:
             return np.nan
-
-    def _extend_df_coords(self, df, band, pass_name):
-        fsar_pass = self.cropex14campaign.get_pass(pass_name, band)
-        lut = fsar_pass.load_gtc_sr2geo_lut()
-        northing = df["northing"].to_numpy().copy()
-        easting = df["easting"].to_numpy().copy()
-        lut_northing, lut_easting = fc.geocode_coords_eastnorth_to_lutindices(easting, northing, lut)
-        az, rg = fc.geocode_coords_lutindices_to_azrg(lut_northing, lut_easting, lut)
-        # extend data frame
-        df_extended = df.assign(
-            lut_northing=lut_northing,
-            lut_easting=lut_easting,
-            azimuth=az,
-            range=rg,
-        )
-        return df_extended
 
     def _read_biomass_file(self, file_path):
         """
@@ -833,19 +801,10 @@ class CROPEX14Biomass:
         )
         return df
 
-    def load_biomass_points(self, band=None, pass_name=None):
+    def load_biomass_points(self):
         """
         Load point biomass measurements.
         Additional data points were manually added from the comments in soil moisture excel sheets.
-
-        If band and pass_name are provided, the point coordinates (northing, easting) will be
-        additionally geocoded to the RGI azimuth and range coordinates using the F-SAR GTC-LUT files.
-        Note that no filtering is applied and all points are geocoded, even if they do not belong
-        to the date of the specified F-SAR pass.
-
-        Arguments:
-            band: band ("X", "C", or "L"), optional
-            pass_name: pass name, optional
 
         Returns:
             Pandas dataframe with following columns:
@@ -867,9 +826,6 @@ class CROPEX14Biomass:
                 "soil_moisture" - average volumetric soil moisture from several samples at that position, value ranges from 0 to 1
                 "soil_moisture_1", ..., "soil_moisture_6" - individual volumetric soil moisture measurements at that position
                 "data_src" - indicates the data source (e.g. name of the excel file)
-            If band and pass_name are provided, additionals columns are added:
-                "lut_northing", "lut_easting" - pixel coordinates within the LUT
-                "azimuth", "range" - pixel coordinates within the SLC
         """
         all_dfs = [
             self._read_biomass_file(self.data_folder / "Veg_Wallerfing_2014_05_15.xlsx"),
@@ -885,6 +841,4 @@ class CROPEX14Biomass:
             self._get_additional_data(),
         ]
         combined_df = pd.concat(all_dfs, ignore_index=True)
-        if band is not None and pass_name is not None:
-            combined_df = self._extend_df_coords(combined_df, band, pass_name)
         return combined_df

@@ -5,9 +5,6 @@ Data loader for soil moisture ground measurements for the HTERRA 2022 campaign.
 import pathlib
 from datetime import datetime
 import pandas as pd
-import geopandas as gpd
-import shapely
-import fsarcamp as fc
 import fsarcamp.hterra22 as ht22
 
 
@@ -210,38 +207,3 @@ class HTERRA22Moisture:
         dataframes = [self._filter_subset(points, *reg_time_filter) for reg_time_filter in filters]
         result = pd.concat(dataframes, ignore_index=True)
         return result
-
-    def filter_points_by_geometry(self, points: pd.DataFrame, geometry_longlat: shapely.Geometry):
-        """
-        Filter the points by the specified geometry (e.g. polygon) in longitude-latitude coordinates.
-        """
-        point_locations = gpd.GeoSeries(points.apply(lambda x: shapely.Point(x["longitude"], x["latitude"]), axis=1))
-        result = points[point_locations.within(geometry_longlat)]
-        return result
-
-    def geocode_points(self, points: pd.DataFrame, campaign: ht22.HTERRA22Campaign, band: str):
-        """
-        Geocode the points to the geocoding-lookup-table (LUT) and SLC coordinates.
-        The HTERRA22Campaign must be provided to load the LUT which is required for geocoding.
-        Returns a dataframe with additional columns added:
-            "northing", "easting" - geographical coordinates in the LUT projection (UTM zone 33)
-            "lut_northing", "lut_easting" - pixel indices within the LUT
-            "azimuth", "range" - pixel indices within the SLC
-        """
-        fsar_pass = campaign.get_pass("22hterra0104", band)  # same coordinate system for all flights and passes
-        lut = fsar_pass.load_gtc_sr2geo_lut()
-        latitude = points["latitude"].to_numpy()
-        longitude = points["longitude"].to_numpy()
-        easting, northing = fc.geocode_coords_longlat_to_eastnorth(longitude, latitude, lut.projection)
-        lut_northing, lut_easting = fc.geocode_coords_eastnorth_to_lutindices(easting, northing, lut)
-        az, rg = fc.geocode_coords_lutindices_to_azrg(lut_northing, lut_easting, lut)
-        # extend data frame
-        points_geocoded = points.assign(
-            northing=northing,
-            easting=easting,
-            lut_northing=lut_northing,
-            lut_easting=lut_easting,
-            azimuth=az,
-            range=rg,
-        )
-        return points_geocoded

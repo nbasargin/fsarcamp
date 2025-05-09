@@ -7,9 +7,6 @@ import pathlib
 import datetime
 import numpy as np
 import pandas as pd
-import geopandas as gpd
-import shapely
-import fsarcamp as fc
 import fsarcamp.cropex14 as cr14
 
 
@@ -26,7 +23,7 @@ class CROPEX14Moisture:
     def _to_float(self, value):
         try:
             return float(value)
-        except:
+        except Exception:
             return np.nan
 
     def _read_soil_moisture_sheet(self, file_path, sheet_name, num_rows, field_name, point_id_offset=0):
@@ -95,7 +92,7 @@ class CROPEX14Moisture:
         """
         Load soil moisture ground measurements.
         If a period is provided, only load excel files for that period are loaded.
-        Otherwise, all ground measuremetns from all excel files are loaded.
+        Otherwise, all ground measurements from all excel files are loaded.
         The period is specified by name, see `fsarcamp.cropex14.dates` for allowed values.
 
         Returns a pandas dataframe with following columns:
@@ -280,38 +277,3 @@ class CROPEX14Moisture:
             all_dfs.append(self._read_soil_moisture_sheet(get_path("2014_08_24.xlsx"), "Big Field", 43, name_big))
         all_points = pd.concat(all_dfs, ignore_index=True)
         return all_points
-
-    def filter_points_by_geometry(self, points: pd.DataFrame, geometry_longlat: shapely.Geometry):
-        """
-        Filter the points by the specified geometry (e.g. polygon) in longitude-latitude coordinates.
-        """
-        point_locations = gpd.GeoSeries(points.apply(lambda x: shapely.Point(x["longitude"], x["latitude"]), axis=1))
-        result = points[point_locations.within(geometry_longlat)]
-        return result
-
-    def geocode_points(self, points: pd.DataFrame, campaign: cr14.CROPEX14Campaign, pass_name: str, band: str):
-        """
-        Geocode the points to the geocoding-lookup-table (LUT) and SLC coordinates (for a specific F-SAR pass).
-        The CROPEX14Campaign must be provided to load the LUT which is required for geocoding.
-        Returns a dataframe with additional columns added:
-            "northing", "easting" - geographical coordinates in the LUT projection (UTM zone 33)
-            "lut_northing", "lut_easting" - pixel indices within the LUT
-            "azimuth", "range" - pixel indices within the SLC
-        """
-        fsar_pass = campaign.get_pass(pass_name, band)
-        lut = fsar_pass.load_gtc_sr2geo_lut()
-        latitude = points["latitude"].to_numpy()
-        longitude = points["longitude"].to_numpy()
-        easting, northing = fc.geocode_coords_longlat_to_eastnorth(longitude, latitude, lut.projection)
-        lut_northing, lut_easting = fc.geocode_coords_eastnorth_to_lutindices(easting, northing, lut)
-        az, rg = fc.geocode_coords_lutindices_to_azrg(lut_northing, lut_easting, lut)
-        # extend data frame
-        df_extended = points.assign(
-            northing=northing,
-            easting=easting,
-            lut_northing=lut_northing,
-            lut_easting=lut_easting,
-            azimuth=az,
-            range=rg,
-        )
-        return df_extended
