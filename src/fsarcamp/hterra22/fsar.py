@@ -5,17 +5,18 @@ from fsarcamp import campaign_utils
 
 class HTERRA22Campaign:
     def __init__(self, campaign_folder):
-        self.name = "HTERRA 22"
+        """
+        Data loader for SAR data for the HTERRA 2022 campaign.
+        The `campaign_folder` path on the DLR-HR server as of November 2024:
+        "/data/HR_Data/Pol-InSAR_InfoRetrieval/01_projects/01_projects/22HTERRA"        
+        """
+        self.name = "HTERRA 2022"
         self.campaign_folder = pathlib.Path(campaign_folder)
         self.coreg_to_master = campaign_utils.get_coreg_to_master_mapping(self._pass_hierarchy())
 
     def get_pass(self, pass_name, band):
         master_name = self.coreg_to_master.get(pass_name, None)
         return HTERRA22Pass(self.campaign_folder, pass_name, band, master_name)
-
-    def get_pauli_rgb_max(self, band):
-        """Get the max cutoff values for the Pauli RGB images, for each channel (R, G, B)."""
-        return {"C": (0.55, 0.48, 0.95), "L": (0.30, 0.20, 0.49)}[band]
 
     def _pass_hierarchy(self):
         """Nested dictionary: band -> master passes -> coregistered passes"""
