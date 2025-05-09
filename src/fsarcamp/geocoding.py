@@ -7,6 +7,8 @@ import fsarcamp as fc
 import pyproj
 import shapely
 import shapely.ops as ops
+import pandas as pd
+import geopandas as gpd
 
 
 def nearest_neighbor_lookup(img: np.ndarray, lut_az, lut_rg, inv_value=np.nan) -> np.ndarray:
@@ -152,3 +154,50 @@ def geocode_geometry_longlat_to_azrg(geometry_longlat: shapely.Geometry, lut: fc
     shape_lutincides = geocode_geometry_eastnorth_to_lutindices(shape_eastnorth, lut)
     shape_azrg = geocode_geometry_lutindices_to_azrg(shape_lutincides, lut)
     return shape_azrg
+
+
+# pandas dataframe with longitude and latitude columns
+
+
+def geocode_dataframe_longlat(df: pd.DataFrame, lut: fc.Geo2SlantRange):
+    """
+    Geocode a pandas dataframe with "longitude" and "latitude" columns to LUT and SLC geometry.
+    Returns a new dataframe with additional columns added:
+        "northing", "easting" - geographical coordinates in the LUT projection
+        "lut_northing", "lut_easting" - pixel indices within the LUT
+        "azimuth", "range" - pixel indices within the SLC
+    """
+    latitude = df["latitude"].to_numpy()
+    longitude = df["longitude"].to_numpy()
+    easting, northing = fc.geocode_coords_longlat_to_eastnorth(longitude, latitude, lut.projection)
+    lut_northing, lut_easting = fc.geocode_coords_eastnorth_to_lutindices(easting, northing, lut)
+    az, rg = fc.geocode_coords_lutindices_to_azrg(lut_northing, lut_easting, lut)
+    # extend data frame
+    df_geocoded = df.assign(
+        northing=northing,
+        easting=easting,
+        lut_northing=lut_northing,
+        lut_easting=lut_easting,
+        azimuth=az,
+        range=rg,
+    )
+    return df_geocoded
+
+
+def filter_dataframe_longlat_by_geometry(df: pd.DataFrame, geometry_longlat: shapely.Geometry):
+    """
+    Filter a pandas dataframe with "longitude" and "latitude" columns by the specified geometry (e.g. polygon).
+    """
+    point_locations = gpd.GeoSeries(df.apply(lambda x: shapely.Point(x["longitude"], x["latitude"]), axis=1))
+    result = df[point_locations.within(geometry_longlat)]
+    return result
+
+
+def filter_dataframe_longlat_by_geometry_list(df: pd.DataFrame, geometry_list_longlat: list[shapely.Geometry]):
+    """
+    Filter a pandas dataframe with "longitude" and "latitude" columns by geometry list (e.g. several polygons).
+    """
+    point_locations = gpd.GeoSeries(df.apply(lambda x: shapely.Point(x["longitude"], x["latitude"]), axis=1))
+    filtered_dfs = [df[point_locations.within(geom)] for geom in geometry_list_longlat]
+    filtered_df = pd.concat(filtered_dfs, ignore_index=True)
+    return filtered_df

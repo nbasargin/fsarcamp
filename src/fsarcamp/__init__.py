@@ -25,4 +25,6 @@ from .geocoding import geocode_coords_longlat_to_eastnorth, geocode_coords_eastn
 from .geocoding import geocode_coords_lutindices_to_azrg, geocode_coords_longlat_to_azrg
 from .geocoding import geocode_geometry_longlat_to_eastnorth, geocode_geometry_eastnorth_to_lutindices
 from .geocoding import geocode_geometry_lutindices_to_azrg, geocode_geometry_longlat_to_azrg
+from .geocoding import geocode_dataframe_longlat
+from .geocoding import filter_dataframe_longlat_by_geometry, filter_dataframe_longlat_by_geometry_list
 from .geocoded_regions import GeocodedRegions
