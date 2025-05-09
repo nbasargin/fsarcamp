@@ -34,7 +34,6 @@ Following data loaders are currently supported:
 - `CROPEX14Biomass`: Point-wise biomass ground measurements collected by the ground teams over specific fields
 - `CROPEX14Moisture`: Point-wise soil moisture ground measurements collected by the ground teams over specific fields
 - `CROPEX14Regions`: Region definitions and geocoding for the relevant fields (as polygons)
-- `CROPEX14FieldMap`: Field polygons and crop types, reads an external SHP file
 
 ### HTERRA 2022
 
@@ -53,7 +52,6 @@ This package defines following constants:
 Following data loaders are currently supported:
 - `HTERRA22Campaign`: F-SAR data loader (SLC, incidence, lookup tables, etc.)
 - `HTERRA22Moisture`: Point-wise soil moisture ground measurements collected by the ground teams over specific fields
-- `HTERRA22MoistureInterpolated`: Interpolation of soil moisture ground measurements to a raster in SLC or LUT coordinates
 - `HTERRA22Regions`: Region definitions and geocoding for the relevant fields (as polygons)
 
 
