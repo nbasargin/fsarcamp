@@ -28,3 +28,4 @@ from .geocoding import geocode_geometry_lutindices_to_azrg, geocode_geometry_lon
 from .geocoding import geocode_dataframe_longlat
 from .geocoding import filter_dataframe_longlat_by_geometry, filter_dataframe_longlat_by_geometry_list
 from .geocoded_regions import GeocodedRegions
+from .interpolation import interpolate_points_longlat_to_lut_region, interpolate_points_longlat_to_slc_region
