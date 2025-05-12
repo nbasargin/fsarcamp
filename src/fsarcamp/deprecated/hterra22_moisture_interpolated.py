@@ -6,10 +6,13 @@ import numpy as np
 import scipy
 import pandas as pd
 import fsarcamp.hterra22 as ht22
+import fsarcamp.deprecated.hterra22_moisture_old as ht22old
+
+import fsarcamp.deprecated.hterra22_regions_old as ht22reg
 
 
-class HTERRA22MoistureInterpolated:
-    def __init__(self, moisture: ht22.HTERRA22MoistureOld):
+class HTERRA22MoistureInterpolated: # !!!!
+    def __init__(self, moisture: ht22old.HTERRA22MoistureOld): # !!!!
         """
         Interpolation of the soil moisture ground measurements to the SLC grid for the HTERRA 2022 campaign.
 
@@ -100,7 +103,7 @@ class HTERRA22MoistureInterpolated:
         Soil moisture values range from 0 (0%) to 1 (100%).
         """
         interpolation_groups = self._form_interpolation_groups(band, region_name, time_period_id)
-        (northing_min, northing_max), (easting_min, easting_max) = ht22.get_region_lut_coordinates(band, region_name)
+        (northing_min, northing_max), (easting_min, easting_max) = ht22reg.get_region_lut_coordinates(band, region_name)
         region_shape = (northing_max - northing_min, easting_max - easting_min)
         interpolated_soil_moisture_lut = np.full(region_shape, fill_value=np.nan, dtype=np.float32)
         for sm_points in interpolation_groups:
@@ -124,7 +127,7 @@ class HTERRA22MoistureInterpolated:
         Soil moisture values range from 0 (0%) to 1 (100%).
         """
         interpolation_groups = self._form_interpolation_groups(band, region_name, time_period_id)
-        (az_min, az_max), (rg_min, rg_max) = ht22.get_region_radar_coordinates(band, region_name)
+        (az_min, az_max), (rg_min, rg_max) = ht22reg.get_region_radar_coordinates(band, region_name)
         region_shape = (az_max - az_min, rg_max - rg_min)
         interpolated_soil_moisture_slc = np.full(region_shape, fill_value=np.nan, dtype=np.float32)
         for sm_points in interpolation_groups:
