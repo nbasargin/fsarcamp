@@ -52,7 +52,7 @@ def interpolate_points_longlat_to_lut_region(
     axis_lut_n, axis_lut_e = np.arange(lut_n_min, lut_n_max), np.arange(lut_e_min, lut_e_max)
     grid_lut_n, grid_lut_e = np.meshgrid(axis_lut_n, axis_lut_e, indexing="ij")
     interpolated_data_lutregion = interpolator(grid_lut_n, grid_lut_e)
-    return interpolated_data_lutregion
+    return interpolated_data_lutregion.filled(np.nan)
 
 
 def interpolate_points_longlat_to_slc_region(
