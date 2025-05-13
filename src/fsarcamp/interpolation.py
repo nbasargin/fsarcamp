@@ -97,4 +97,4 @@ def interpolate_points_longlat_to_slc_region(
     axis_az, axis_rg = np.arange(az_min, az_max), np.arange(rg_min, rg_max)
     grid_az, grid_rg = np.meshgrid(axis_az, axis_rg, indexing="ij")
     interpolated_data_slcregion = interpolator(grid_az, grid_rg)
-    return interpolated_data_slcregion
+    return interpolated_data_slcregion.filled(np.nan)
