@@ -736,11 +736,14 @@ class CROPEX25Pass:
 
     # RGI folder
 
-    def load_rgi_slc(self, pol):
+    def load_rgi_slc(self, pol, antenna=""):
         """
         Load SLC in specified polarization ("hh", "hv", "vh", "vv") from the RGI folder.
+        Multiple antennas are available for selected passes, the antenna ID can be specified with `antenna`.
         """
-        return fc.mrrat(self._rgi_folder() / "RGI-SR" / f"slc_{self.pass_name}_{self.band}{pol}_t01{self.band}.rat")
+        return fc.mrrat(
+            self._rgi_folder() / "RGI-SR" / f"slc_{self.pass_name}_{self.band}{antenna}{pol}_t01{self.band}.rat"
+        )
 
     def load_rgi_incidence(self, pol=None):
         """
@@ -759,14 +762,15 @@ class CROPEX25Pass:
 
     # INF folder
 
-    def load_inf_slc(self, pol):
+    def load_inf_slc(self, pol, antenna=""):
         """
         Load coregistered SLC in specified polarization ("hh", "hv", "vh", "vv") from the INF folder.
+        Multiple antennas are available for selected passes, the antenna ID combination can be specified with `antenna`.
         """
         return fc.mrrat(
             self._inf_folder()
             / "INF-SR"
-            / f"slc_coreg_{self.master_name}_{self.pass_name}_{self.band}{pol}_t01{self.band}.rat"
+            / f"slc_coreg_{self.master_name}_{self.pass_name}_{self.band}{antenna}{pol}_t01{self.band}.rat"
         )
 
     def load_inf_pha_dem(self, pol=None):
@@ -792,14 +796,15 @@ class CROPEX25Pass:
             self._inf_folder() / "INF-SR" / f"pha_fe_{self.master_name}_{self.pass_name}_{self.band}_t01{self.band}.rat"
         )
 
-    def load_inf_kz(self, pol):
+    def load_inf_kz(self, pol, antenna=""):
         """
         Load interferometric kz.
+        Multiple antennas are available for selected passes, the antenna ID combination can be specified with `antenna`.
         """
         return fc.mrrat(
             self._inf_folder()
             / "INF-SR"
-            / f"kz_{self.master_name}_{self.pass_name}_{self.band}{pol}_t01{self.band}.rat"
+            / f"kz_{self.master_name}_{self.pass_name}_{self.band}{antenna}{pol}_t01{self.band}.rat"
         )
 
     def load_inf_params(self, pol="hh"):
