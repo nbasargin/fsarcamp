@@ -14,6 +14,10 @@ class CROPEX25Campaign:
         self.campaign_folder = pathlib.Path(campaign_folder)
         self.coreg_to_master = campaign_utils.get_coreg_to_master_mapping(self._pass_hierarchy())
 
+    def get_pass(self, pass_name, band):
+        master_name = self.coreg_to_master.get(pass_name, None)
+        return CROPEX25Pass(self.campaign_folder, pass_name, band, master_name)
+
     def _pass_hierarchy(self):
         """Nested dictionary: band -> master passes -> coregistered passes"""
         return {
