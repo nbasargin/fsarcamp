@@ -831,8 +831,10 @@ class CROPEX25Pass:
 
     # GTC folder
 
-    def load_gtc_sr2geo_lut(self):
-        """TODO"""
+    def load_gtc_sr2ell_lut(self):
+        fname_lut_az = self._gtc_folder() / "GTC-LUT" / f"sr2ell_az_{self.pass_name}_{self.band}_t01{self.band}.tif"
+        fname_lut_rg = self._gtc_folder() / "GTC-LUT" / f"sr2ell_rg_{self.pass_name}_{self.band}_t01{self.band}.tif"
+        return fc.SlantRange2EllTif(fname_lut_az, fname_lut_rg)
 
     # Helpers
 
@@ -859,6 +861,10 @@ class CROPEX25Pass:
             return pass_folder / f"INF_{triple_flights[flight_id]}"
         else:
             return pass_folder / f"INF_{flight_id}"
+
+    def _gtc_folder(self):
+        flight_id, pass_id = campaign_utils.get_flight_and_pass_ids(self.pass_name)
+        return self.campaign_folder / f"FL{flight_id}/PS{pass_id}/T01{self.band}/GTC"
 
     def __repr__(self):
         return f"{self.pass_name}_{self.band}"
