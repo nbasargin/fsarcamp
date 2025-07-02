@@ -152,5 +152,17 @@ class SlantRange2EllTif:
 
     # geocoding pandas dataframe with longitude and latitude columns, adding additional columns
 
-    def geocode_dataframe_longlat(self, df: pd.DataFrame):
-        pass
+    def geocode_dataframe_longlat_to_azrg(self, df: pd.DataFrame):
+        """
+        Geocode a pandas dataframe with "longitude" and "latitude" columns to slant range geometry.
+        Returns a new dataframe with additional "azimuth", "range" columns containing pixel indices within the SLC.
+        """
+        latitude = df["latitude"].to_numpy()
+        longitude = df["longitude"].to_numpy()
+        az, rg = self.geocode_coords_longlat_to_azrg(longitude, latitude)
+        # extend data frame
+        df_geocoded = df.assign(
+            azimuth=az,
+            range=rg,
+        )
+        return df_geocoded
