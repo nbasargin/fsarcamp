@@ -68,8 +68,12 @@ class CROPEX25Moisture:
         date_str, flight_suffix = period_to_date_flight[period_name]
         file_path = self.data_folder / f"{date_str}_{field_id}/{date_str}_{field_id}_SoilMoisture{flight_suffix}.csv"
         df = pd.read_csv(file_path)
+        # convert soil moisture values to the range [0, 1] from percentage values
+        sm_column_names = [f"soil_moisture_{i}" for i in [1, 2, 3, 4, 5, 6]]
+        for column in sm_column_names:
+            df[column] = df[column] / 100
         # average soil moisture
-        sm_vals = df[["soil_moisture_1", "soil_moisture_2", "soil_moisture_3", "soil_moisture_4", "soil_moisture_5", "soil_moisture_6"]]
+        sm_vals = df[sm_column_names]
         sm_avg = sm_vals.mean(axis=1)
         df = df.assign(soil_moisture=sm_avg)
         return df
