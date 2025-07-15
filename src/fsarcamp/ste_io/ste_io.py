@@ -305,7 +305,7 @@ class RatFile:
         If the file exists reads the file's header, if not then initializes
         the empty ``RatFile`` **instance** with a given filename.
 
-        :param filename: either a RAT filename (with \*.rat extension) if the
+        :param filename: either a RAT filename (with *.rat extension) if the
           file is in current working directory or an absolute path of the file.
         :type filename: string
         :return: RatFile instance
@@ -345,7 +345,7 @@ class RatFile:
         a ``dtype`` keyword if the proper datatype wasn't specified in
         header's ``RatHeaderRat.var`` attribute).
 
-        :param shape: the shape of the data to store in \*.rat file
+        :param shape: the shape of the data to store in *.rat file
         :type shape: list
         :param header: a rat header
         :type header: RatHeaderRat
