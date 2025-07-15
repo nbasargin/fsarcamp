@@ -19,14 +19,14 @@ class CROPEX14Biomass:
     def _to_float(self, value):
         try:
             if isinstance(value, str):
-                matches = re.match("^(\d+)-(\d+)$", value)
+                matches = re.match("^(\\d+)-(\\d+)$", value)
                 if matches:
                     # string a range of values like "9-10" -> take the average
                     val1 = float(matches.group(1))
                     val2 = float(matches.group(2))
                     result = (val1 + val2) / 2
                     return result
-                if re.match("^(\d+),(\d+)$", value):
+                if re.match("^(\\d+),(\\d+)$", value):
                     # comma used as decimal separator
                     result = float(value.replace(",", "."))
                     return result
