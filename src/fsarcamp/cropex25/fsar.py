@@ -1,4 +1,5 @@
 import pathlib
+import rasterio
 import fsarcamp as fc
 from fsarcamp import campaign_utils
 
@@ -830,11 +831,24 @@ class CROPEX25Pass:
         )
 
     # GTC folder
-
+    
     def load_gtc_sr2ell_lut(self):
+        """
+        Return the geocoding lookup table (LUT).
+        Geographical Axes: latitude, longitude.
+        Orientations: north, east.
+        UoM: degree
+        """
         fname_lut_az = self._gtc_folder() / "GTC-LUT" / f"sr2ell_az_{self.pass_name}_{self.band}_t01{self.band}.tif"
         fname_lut_rg = self._gtc_folder() / "GTC-LUT" / f"sr2ell_rg_{self.pass_name}_{self.band}_t01{self.band}.tif"
-        return fc.SlantRange2EllTif(fname_lut_az, fname_lut_rg)
+        with rasterio.open(fname_lut_az) as file_az:
+            transform = file_az.transform
+            crs = file_az.crs
+            lut_az = file_az.read(1)
+        with rasterio.open(fname_lut_rg) as file_rg:
+            lut_rg = file_rg.read(1)
+        lut = fc.SlantRange2Geo(lut_az=lut_az, lut_rg=lut_rg, crs=crs, transform=transform)
+        return lut
 
     # Helpers
 

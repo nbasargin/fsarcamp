@@ -1,5 +1,5 @@
 # Re-exporting internal functionality
-from .fsar import CROPEX25Campaign
+from .fsar import CROPEX25Campaign, CROPEX25Pass
 from .moisture import CROPEX25Moisture
 from .regions import CROPEX25Regions
 from .regions import EITELSRIED_MAIZE, EITELSRIED_POTATO, EITELSRIED_WHEAT

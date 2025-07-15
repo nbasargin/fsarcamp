@@ -17,7 +17,6 @@ from .multilook import (
 from .fs_utils import get_polinsar_folder
 from .fsar_lut import Geo2SlantRange
 from .fsar_lut_crop import GeoCrop
-from .fsar_sr2ell_tif import SlantRange2EllTif
 from .fsar_parameters import get_fsar_center_frequency, get_fsar_wavelength
 from .pauli_rgb import slc_to_pauli_rgb, coherency_matrix_to_pauli_rgb
 from .polsar import slc_to_coherency_matrix, h_a_alpha_decomposition
@@ -29,4 +28,5 @@ from .geocoding import geocode_geometry_lutindices_to_azrg, geocode_geometry_lon
 from .geocoding import geocode_dataframe_longlat
 from .geocoding import filter_dataframe_longlat_by_geometry, filter_dataframe_longlat_by_geometry_list
 from .geocoded_regions import GeocodedRegions
+from .slantrange2geo import SlantRange2Geo
 from .interpolation import interpolate_points_longlat_to_lut_region, interpolate_points_longlat_to_slc_region
