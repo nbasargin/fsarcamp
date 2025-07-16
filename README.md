@@ -2,7 +2,10 @@
 
 The main purpose of this package is to provide a convenient way to load the data of different F-SAR campaigns, including F-SAR radar data (e.g. SLC, incidence), geocoding lookup tables (LUT), and campaign ground measurements (if available).
 
-## Editable installation
+## Installation
+`pip install fsarcamp`
+
+Alternatively, you can install the package in editable mode:
 - Clone this repository to your machine.
 - Then, activate the python environment (e.g. conda or venv) where the package should be installed.
 - Run `pip install -e .` in the root folder of this package (where `pyproject.toml` is located).
@@ -54,8 +57,33 @@ Following data loaders are currently supported:
 - `HTERRA22Moisture`: Point-wise soil moisture ground measurements collected by the ground teams over specific fields
 - `HTERRA22Regions`: Region definitions and geocoding for the relevant fields (as polygons)
 
+### CROPEX 2025 (AgriROSE-L)
+
+Campaign focusing on agricultural crops and soil moisture with regular flights from April to July 2025.
+X-, C-, S-, and L-band are available, most dates have several baselines allowing tomography.
+Several fields have been monitored during the campaign with a focus on soil moisture and vegetation parameters.
+
+The data loaders are currently experimental and subject to change.
+
 
 # Notes
 
 This repository includes third party code obtained from `https://github.com/birgander2/PyRAT` to read RAT files.
 Third party code is located in the `fsarcamp/src/fsarcamp/ste_io` folder and is licensed under the MPL-2.0 license.
+
+
+# Changelog
+
+## v3.0.0-rc (work in progress)
+
+Added
+- Data loaders for the CROPEX 2025 campaign
+
+Breaking changes
+- GTC lookup tables loaders have been adjusted to support different types of geocoding lookup tables
+- Related geocoding functionality has been moved and adjusted
+- Some deprecated modules and functions were removed
+
+## v2.0.1
+First publicly available version of this package.
+Provides data loaders for the CROPEX 2014 and HTERRA 2022 campaigns.
