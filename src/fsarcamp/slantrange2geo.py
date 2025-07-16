@@ -8,9 +8,6 @@ import shapely.ops
 import pyproj
 from typing import Any
 
-import fsarcamp as fc
-import fsarcamp.cropex25 as cr25
-
 
 class SlantRange2Geo:
     """
@@ -39,7 +36,7 @@ class SlantRange2Geo:
 
     # geocoding azrg image to geographical coordinates
 
-    def geocode_image_azrg_to_geo(self, img: np.ndarray, inv_value=np.nan) -> np.ndarray:
+    def geocode_image_azrg_to_crs(self, img: np.ndarray, inv_value=np.nan) -> np.ndarray:
         """
         Geocode an image from Azimuth-Range to geographical coordinates of this lookup table.
         Nearest neighbor lookup is used (faster but less accurate than interpolation).
@@ -76,14 +73,26 @@ class SlantRange2Geo:
 
     # geocoding coordinate arrays
 
-    def _geocode_coords_geo_to_rowcol(self, xs, ys):
+    def geocode_coords_longlat_to_crs(self, longitude, latitude):
         """
-        Convert geographical coordinates (e.g. xs=longitude, ys=latitude) to lookup table indices (rows and columns).
+        Convert Longitude-Latitude coordinates to the CRS of this lookup table.
+        If CRS of this lookup table is already EPSG:4326, this function returns the original coordinates.
+        """
+        if self.crs.to_epsg() == 4326:
+            return longitude, latitude  # this lookup table is 4326, coordinates already matching
+        proj_longlat = pyproj.Proj(proj="longlat", ellps="WGS84", datum="WGS84")
+        longlat_to_crs = pyproj.Transformer.from_proj(proj_longlat, self.get_proj())
+        xs, ys = longlat_to_crs.transform(longitude, latitude)
+        return xs, ys
+
+    def geocode_coords_crs_to_rowcol(self, xs, ys):
+        """
+        Convert geographical coordinates (matching the CRS) to lookup table indices (rows and columns).
         """
         rows, cols = rasterio.transform.rowcol(self.transform, xs, ys)
         return rows, cols
 
-    def _geocode_coords_rowcol_to_azrg(self, rows, cols):
+    def geocode_coords_rowcol_to_azrg(self, rows, cols):
         """
         Geocode lookup table indices (rows and columns) to SLC geometry (azimuth-range).
         First, the appropriate pixels are selected in the lookup table.
@@ -119,80 +128,62 @@ class SlantRange2Geo:
             rg[invalid_results] = np.nan
         return az, rg
 
-    def geocode_coords_geo_to_azrg(self, xs, ys):
-        rows, cols = self._geocode_coords_geo_to_rowcol(xs, ys)
-        az, rg = self._geocode_coords_rowcol_to_azrg(rows, cols)
+    def geocode_coords_crs_to_azrg(self, xs, ys):
+        rows, cols = self.geocode_coords_crs_to_rowcol(xs, ys)
+        az, rg = self.geocode_coords_rowcol_to_azrg(rows, cols)
+        return az, rg
+
+    def geocode_coords_longlat_to_azrg(self, longitude, latitude):
+        xs, ys = self.geocode_coords_longlat_to_crs(longitude, latitude)
+        rows, cols = self.geocode_coords_crs_to_rowcol(xs, ys)
+        az, rg = self.geocode_coords_rowcol_to_azrg(rows, cols)
         return az, rg
 
     # geocoding shapely geometry
 
-    def _geocode_geometry_geo_to_rowcol(self, geometry_geo: shapely.Geometry):
-        fn: Any = self._geocode_coords_geo_to_rowcol
-        return shapely.ops.transform(fn, geometry_geo)
+    def geocode_geometry_longlat_to_crs(self, geometry_longlat: shapely.Geometry):
+        fn: Any = self.geocode_coords_longlat_to_crs
+        return shapely.ops.transform(fn, geometry_longlat)
 
-    def _geocode_geometry_rowcol_to_azrg(self, geometry_rowcol: shapely.Geometry):
-        fn: Any = self._geocode_coords_rowcol_to_azrg
+    def geocode_geometry_crs_to_rowcol(self, geometry_crs: shapely.Geometry):
+        fn: Any = self.geocode_coords_crs_to_rowcol
+        return shapely.ops.transform(fn, geometry_crs)
+
+    def geocode_geometry_rowcol_to_azrg(self, geometry_rowcol: shapely.Geometry):
+        fn: Any = self.geocode_coords_rowcol_to_azrg
         return shapely.ops.transform(fn, geometry_rowcol)
 
-    def geocode_geometry_geo_to_azrg(self, geometry_geo: shapely.Geometry):
-        geometry_rowcol = self._geocode_geometry_geo_to_rowcol(geometry_geo)
-        geometry_azrg = self._geocode_geometry_rowcol_to_azrg(geometry_rowcol)
+    def geocode_geometry_crs_to_azrg(self, geometry_crs: shapely.Geometry):
+        geometry_rowcol = self.geocode_geometry_crs_to_rowcol(geometry_crs)
+        geometry_azrg = self.geocode_geometry_rowcol_to_azrg(geometry_rowcol)
         return geometry_azrg
 
+    def geocode_geometry_longlat_to_azrg(self, geometry_longlat: shapely.Geometry):
+        geometry_crs = self.geocode_geometry_longlat_to_crs(geometry_longlat)
+        geometry_rowcol = self.geocode_geometry_crs_to_rowcol(geometry_crs)
+        geometry_azrg = self.geocode_geometry_rowcol_to_azrg(geometry_rowcol)
+        return geometry_azrg
 
-def main():
-    # can rasterio crs be used to geocode latlong to utm33n? like pyproj?
-    # is the crs, bounds, and transform sufficient to construct the object
+    # geocoding pandas dataframes
 
-    # https://gis.stackexchange.com/questions/490186/getting-correct-bounds-of-clipped-geotiff-using-rasterio
-
-    pass_name = "25cropex0505"
-    band = "X"
-    campaign = cr25.CROPEX25Campaign(fc.get_polinsar_folder() / "01_projects/25CROPEX")
-    ps: cr25.CROPEX25Pass = campaign.get_pass(pass_name, band)  # type: ignore
-
-    fname_lut_az = ps._gtc_folder() / "GTC-LUT" / f"sr2ell_az_{ps.pass_name}_{ps.band}_t01{ps.band}.tif"
-    fname_lut_rg = ps._gtc_folder() / "GTC-LUT" / f"sr2ell_rg_{ps.pass_name}_{ps.band}_t01{ps.band}.tif"
-
-    with rasterio.open(fname_lut_az) as file_az:
-        # bounds
-        bounds = file_az.bounds
-        transform = file_az.transform
-        # crs and projection
-        crs = file_az.crs
-        # self.projection = pyproj.CRS.from_user_input(self.crs)
-
-        # az lut
-        lut_az = file_az.read(1)
-
-    with rasterio.open(fname_lut_rg) as file_rg:
-        # rg lut
-        lut_rg = file_rg.read(1)
-
-    print("lut_az", type(lut_az), lut_az.shape, lut_az.dtype)
-    print("lut_rg", type(lut_rg), lut_rg.shape, lut_rg.dtype)
-    print("bounds", type(bounds), bounds)
-    print("transform", type(transform), transform)
-    print("crs", type(crs), crs)
-
-    # lut = SlantRange2Geo(lut_az=lut_az, lut_rg=lut_rg, crs=crs, bounds=bounds, transform=transform)
-
-    # can the affine transform be full reconstructed from lut shape and bounds?
-    # rasterio uses transfrom and not bounds
-
-    print()
-    width, height = lut_az.shape
-    transform2 = rasterio.transform.from_bounds(
-        west=bounds.left, south=bounds.bottom, east=bounds.right, north=bounds.top, width=width, height=height
-    )
-
-    print(transform2)
-    print(transform)
-
-    bounds2 = rasterio.transform.array_bounds(width, height, transform)
-    print(bounds)
-    print(bounds2)
-
-
-if __name__ == "__main__":
-    main()
+    def geocode_dataframe_longlat(self, df):
+        """
+        Geocode a pandas dataframe with "longitude" and "latitude" columns to crs, rowcol, and slant range geometry.
+        Returns a new dataframe with additional columns attached.
+        """
+        latitude = df["latitude"].to_numpy()
+        longitude = df["longitude"].to_numpy()
+        print(latitude, type(latitude), latitude.dtype)
+        crs_x, crs_y = self.geocode_coords_longlat_to_crs(longitude, latitude)
+        lut_row, lut_col = self.geocode_coords_crs_to_rowcol(crs_x, crs_y)
+        az, rg = self.geocode_coords_rowcol_to_azrg(lut_row, lut_col)
+        # extend data frame
+        df_geocoded = df.assign(
+            crs_x=crs_x,
+            crs_y=crs_y,
+            lut_row=lut_row,
+            lut_col=lut_col,
+            azimuth=az,
+            range=rg,
+        )
+        return df_geocoded
