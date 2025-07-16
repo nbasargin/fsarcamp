@@ -1,4 +1,8 @@
+import numpy as np
 import pathlib
+import rasterio
+import rasterio.crs
+import rasterio.transform
 import fsarcamp as fc
 from fsarcamp import campaign_utils
 
@@ -333,6 +337,37 @@ class CROPEX14Pass:
         fname_lut_az = pass_folder / "GTC" / "GTC-LUT" / f"sr2geo_az_{self.pass_name}_{self.band}_t01.rat"
         fname_lut_rg = pass_folder / "GTC" / "GTC-LUT" / f"sr2geo_rg_{self.pass_name}_{self.band}_t01.rat"
         return fc.Geo2SlantRange(fname_lut_az, fname_lut_rg)
+
+    def load_gtc_sr2geo_lut_v2(self):
+        pass_folder = self._get_pass_try_folder()
+        fname_lut_az = pass_folder / "GTC" / "GTC-LUT" / f"sr2geo_az_{self.pass_name}_{self.band}_t01.rat"
+        fname_lut_rg = pass_folder / "GTC" / "GTC-LUT" / f"sr2geo_rg_{self.pass_name}_{self.band}_t01.rat"        
+        # read lookup tables
+        f_az = fc.RatFile(fname_lut_az)
+        f_rg = fc.RatFile(fname_lut_rg)
+        # in the RAT file northing (first axis) is decreasing, and easting (second axis) is increasing
+        lut_az = f_az.mread()  # reading with memory map: fast and read-only
+        lut_rg = f_rg.mread()
+        assert lut_az.shape == lut_rg.shape
+        # read projection
+        header_geo = f_az.Header.Geo  # assume lut az and lut rg headers are equal
+        hemisphere_key = "south" if header_geo.hemisphere == 2 else "north"
+        proj_params = {
+            "proj": "utm",
+            "zone": np.abs(header_geo.zone), # negative zone indicates southern hemisphere (defined separaterly)
+            "ellps": "WGS84", # assume WGS84 ellipsoid
+            hemisphere_key: True,
+        }
+        crs = rasterio.crs.CRS.from_dict(proj_params)
+        # get affine transform
+        ps_north = header_geo.ps_north
+        ps_east = header_geo.ps_east
+        min_north = header_geo.min_north
+        min_east = header_geo.min_east
+        max_north = min_north + ps_north * (lut_az.shape[0] - 1)
+        transform = rasterio.transform.from_origin(min_east, max_north, ps_east, ps_north)
+        lut = fc.SlantRange2Geo(lut_az=lut_az, lut_rg=lut_rg, crs=crs, transform=transform)
+        return lut
 
     # Helpers
 
