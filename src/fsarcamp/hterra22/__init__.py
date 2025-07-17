@@ -2,6 +2,7 @@
 from .fsar import HTERRA22Campaign
 from .moisture import HTERRA22Moisture
 from .regions import HTERRA22Regions
+from .regions2 import HTERRA22Regions2
 
 from .dates import APR_28_AM, APR_28_PM, APR_29_AM, APR_29_PM, JUN_15_AM, JUN_15_PM, JUN_16_AM, JUN_16_PM
 

@@ -13,7 +13,7 @@ EITELSRIED_WHEAT = "CR25-EITELSRIED-WHEAT"  # Region of the Eitelsried wheat fie
 
 # Puch test site definitions to be added
 
-# Ditionary of polygons in longlat coordinates
+# Dictionary of polygons in longlat coordinates
 CROPEX25Regions = {
     EITELSRIED_MAIZE: shapely.Polygon(
         [
