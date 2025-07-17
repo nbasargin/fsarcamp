@@ -1,4 +1,8 @@
+import numpy as np
 import pathlib
+import rasterio
+import rasterio.crs
+import rasterio.transform
 import fsarcamp as fc
 from fsarcamp import campaign_utils
 
@@ -8,7 +12,7 @@ class HTERRA22Campaign:
         """
         Data loader for SAR data for the HTERRA 2022 campaign.
         The `campaign_folder` path on the DLR-HR server as of November 2024:
-        "/data/HR_Data/Pol-InSAR_InfoRetrieval/01_projects/01_projects/22HTERRA"        
+        "/data/HR_Data/Pol-InSAR_InfoRetrieval/01_projects/01_projects/22HTERRA"
         """
         self.name = "HTERRA 2022"
         self.campaign_folder = pathlib.Path(campaign_folder)
@@ -150,6 +154,37 @@ class HTERRA22Pass:
         fname_lut_az = gtc_folder / "GTC-LUT" / f"sr2geo_az_22hterra0104_{self.band}_{try_suffix}.rat"
         fname_lut_rg = gtc_folder / "GTC-LUT" / f"sr2geo_rg_22hterra0104_{self.band}_{try_suffix}.rat"
         return fc.Geo2SlantRange(fname_lut_az, fname_lut_rg)
+
+    def load_gtc_sr2geo_lut_v2(self):
+        rgi_folder, inf_folder, gtc_folder, try_suffix = self._get_path_parts()
+        fname_lut_az = gtc_folder / "GTC-LUT" / f"sr2geo_az_22hterra0104_{self.band}_{try_suffix}.rat"
+        fname_lut_rg = gtc_folder / "GTC-LUT" / f"sr2geo_rg_22hterra0104_{self.band}_{try_suffix}.rat"
+        # read lookup tables
+        f_az = fc.RatFile(fname_lut_az)
+        f_rg = fc.RatFile(fname_lut_rg)
+        # in the RAT file northing (first axis) is decreasing, and easting (second axis) is increasing
+        lut_az = f_az.mread()  # reading with memory map: fast and read-only
+        lut_rg = f_rg.mread()
+        assert lut_az.shape == lut_rg.shape
+        # read projection
+        header_geo = f_az.Header.Geo  # assume lut az and lut rg headers are equal
+        hemisphere_key = "south" if header_geo.hemisphere == 2 else "north"
+        proj_params = {
+            "proj": "utm",
+            "zone": np.abs(header_geo.zone),  # negative zone indicates southern hemisphere (defined separaterly)
+            "ellps": "WGS84",  # assume WGS84 ellipsoid
+            hemisphere_key: True,
+        }
+        crs = rasterio.crs.CRS.from_dict(proj_params)
+        # get affine transform
+        ps_north = header_geo.ps_north
+        ps_east = header_geo.ps_east
+        min_north = header_geo.min_north
+        min_east = header_geo.min_east
+        max_north = min_north + ps_north * (lut_az.shape[0] - 1)
+        transform = rasterio.transform.from_origin(min_east, max_north, ps_east, ps_north)
+        lut = fc.SlantRange2Geo(lut_az=lut_az, lut_rg=lut_rg, crs=crs, transform=transform)
+        return lut
 
     # Helpers
 
