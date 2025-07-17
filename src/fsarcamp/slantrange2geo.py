@@ -173,7 +173,6 @@ class SlantRange2Geo:
         """
         latitude = df["latitude"].to_numpy()
         longitude = df["longitude"].to_numpy()
-        print(latitude, type(latitude), latitude.dtype)
         crs_x, crs_y = self.geocode_coords_longlat_to_crs(longitude, latitude)
         lut_row, lut_col = self.geocode_coords_crs_to_rowcol(crs_x, crs_y)
         az, rg = self.geocode_coords_rowcol_to_azrg(lut_row, lut_col)
