@@ -4,6 +4,7 @@ from rasterio import Affine
 from rasterio.crs import CRS
 import rasterio.transform
 import rasterio.plot
+import rasterio.windows
 import shapely
 import shapely.ops
 import pyproj
@@ -31,15 +32,40 @@ class SlantRange2Geo:
         width, height = self.lut_az.shape
         west, south, east, north = rasterio.transform.array_bounds(width, height, self.transform)
         return west, south, east, north
-    
+
     def get_plotting_extent(self):
-        """Return the bounds in the matplotlib order (for matplotlib.pyplot.imshow()) """
+        """Return the bounds in the matplotlib order (for matplotlib.pyplot.imshow)."""
         left, right, bottom, top = rasterio.plot.plotting_extent(self.lut_az, self.transform)
         return left, right, bottom, top
 
     def get_proj(self):
         """Rasterio CRS to Pyproj projection."""
         return pyproj.CRS.from_user_input(self.crs)
+
+    # lut transformations
+
+    def crop_to_geometry_crs(self, geometry_crs: shapely.Geometry):
+        """
+        Crop this lookup table to the bounding box of the provided geometry.
+        The geometry CRS must match the CRS of this lookup table.
+        """
+        height, width = self.lut_az.shape
+        minx, miny, maxx, maxy = shapely.total_bounds(geometry_crs)
+        bounds_window = rasterio.windows.from_bounds(minx, miny, maxx, maxy, self.transform)
+        # Round and clip the window to fit within the raster
+        bounds_window = bounds_window.round()
+        col_off = max(0, int(bounds_window.col_off))
+        row_off = max(0, int(bounds_window.row_off))
+        col_end = min(width, int(bounds_window.col_off + bounds_window.width))
+        row_end = min(height, int(bounds_window.row_off + bounds_window.height))
+        if col_off >= col_end or row_off >= row_end:
+            raise ValueError("Geometry is completely outside the raster bounds.")
+        clipped_window = rasterio.windows.Window.from_slices((row_off, row_end), (col_off, col_end))
+        # Crop the lut using the clipped window
+        cropped_lut_az = self.lut_az[row_off:row_end, col_off:col_end]
+        cropped_lut_rg = self.lut_rg[row_off:row_end, col_off:col_end]
+        cropped_transform = rasterio.windows.transform(clipped_window, self.transform)
+        return SlantRange2Geo(lut_az=cropped_lut_az, lut_rg=cropped_lut_rg, crs=self.crs, transform=cropped_transform)
 
     # geocoding azrg image to geographical coordinates
 
