@@ -44,7 +44,7 @@ class SlantRange2Geo:
 
     # lut transformations
 
-    def crop_to_geometry_crs(self, geometry_crs: shapely.Geometry):
+    def crop_to_geometry_crs(self, geometry_crs):
         """
         Crop this lookup table to the bounding box of the provided geometry.
         The geometry CRS must match the CRS of this lookup table.
