@@ -29,4 +29,5 @@ from .geocoding import geocode_dataframe_longlat
 from .geocoding import filter_dataframe_longlat_by_geometry, filter_dataframe_longlat_by_geometry_list
 from .geocoded_regions import GeocodedRegions
 from .slantrange2geo import SlantRange2Geo
+from .windowed_geocoding import WindowedGeocoding
 from .interpolation import interpolate_points_longlat_to_lut_region, interpolate_points_longlat_to_slc_region
