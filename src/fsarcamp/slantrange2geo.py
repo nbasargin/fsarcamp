@@ -3,10 +3,12 @@ import rasterio
 from rasterio import Affine
 from rasterio.crs import CRS
 import rasterio.transform
+import rasterio.plot
 import shapely
 import shapely.ops
 import pyproj
 from typing import Any
+import fsarcamp as fc
 
 
 class SlantRange2Geo:
@@ -29,6 +31,11 @@ class SlantRange2Geo:
         width, height = self.lut_az.shape
         west, south, east, north = rasterio.transform.array_bounds(width, height, self.transform)
         return west, south, east, north
+    
+    def get_plotting_extent(self):
+        """Return the bounds in the matplotlib order (for matplotlib.pyplot.imshow()) """
+        left, right, bottom, top = rasterio.plot.plotting_extent(self.lut_az, self.transform)
+        return left, right, bottom, top
 
     def get_proj(self):
         """Rasterio CRS to Pyproj projection."""
@@ -49,27 +56,9 @@ class SlantRange2Geo:
             numpy array of shape (rows, cols, *C), where (rows, cols) is the shape of the lut_az and lut_rg lookup tables.
             The pixel values are looked up from img at indices (lut_az, lut_rg).
             Pixels where the indices are invalid (e.g., outside of the img) are filled with inv_value.
+            The CRS and spatial coverage match the CRS and spatial coverage of this lookup table.
         """
-        # round values in lookup tables (this creates a copy of the LUT data, so inline operations are allowed later)
-        # flipud required, because the last row of data corresponds to the minimum coordinate
-        lut_rg = np.rint(np.flipud(self.lut_rg))
-        lut_az = np.rint(np.flipud(self.lut_az))
-        # determine invalid positions
-        max_az, max_rg = img.shape[0], img.shape[1]
-        invalid_positions = (
-            np.isnan(lut_az) | np.isnan(lut_rg) | (lut_az < 0) | (lut_az >= max_az) | (lut_rg < 0) | (lut_rg >= max_rg)
-        )
-        # set invalid positions to 0
-        lut_az[invalid_positions] = 0
-        lut_rg[invalid_positions] = 0
-        # convert to integer indices
-        lut_rg = lut_rg.astype(np.int64)
-        lut_az = lut_az.astype(np.int64)
-        # nearest neighbor lookup
-        geocoded = img[lut_az, lut_rg]
-        # apply invalid mask
-        geocoded[invalid_positions] = inv_value
-        return geocoded
+        return fc.nearest_neighbor_lookup(img, self.lut_az, self.lut_rg, inv_value=inv_value)
 
     # geocoding coordinate arrays
 
