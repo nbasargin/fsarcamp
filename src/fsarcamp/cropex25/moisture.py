@@ -61,8 +61,7 @@ class CROPEX25Moisture:
             cr25.JUL_09: ("2025-07-09", ""),
             cr25.JUL_15_MORN: ("2025-07-15", "_1"),
             cr25.JUL_15_NOON: ("2025-07-15", "_2"),
-            cr25.JUL_15_EVEN: ("2025-07-15", "_3"),
-            cr25.JUL_21: ("2025-07-21", ""),
+            cr25.JUL_23: ("2025-07-23", ""),
         }
         field_id = region_to_field_id[region_name]
         date_str, flight_suffix = period_to_date_flight[period_name]
