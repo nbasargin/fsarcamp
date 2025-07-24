@@ -9,4 +9,4 @@ def get_polinsar_folder():
     if platform.system() == "Windows":
         return pathlib.Path("//hr-fs/HR_Data/Pol-InSAR_InfoRetrieval/")
     else:
-        return pathlib.Path("/data/HR_Data/Pol-InSAR_InfoRetrieval/")
+        return pathlib.Path("/hrdss/HR_Data/Pol-InSAR_InfoRetrieval/")
