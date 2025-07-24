@@ -22,11 +22,7 @@ JUN_18 = "CR25-JUN-18" # Flight 16
 JUN_24 = "CR25-JUN-24" # Flight 17
 JUN_30 = "CR25-JUN-30" # Flight 18
 JUL_03 = "CR25-JUL-03" # Flight 19
-
-# planned flights
-
 JUL_09 = "CR25-JUL-09" # Flight 20
 JUL_15_MORN = "CR25-JUL-15-MORN" # Flight 21
 JUL_15_NOON = "CR25-JUL-15-NOON" # Flight 22
-JUL_15_EVEN = "CR25-JUL-15-EVEN" # Flight 23
-JUL_21 = "CR25-JUL-21" # Flight 24
+JUL_21 = "CR25-JUL-22" # Flight 23
