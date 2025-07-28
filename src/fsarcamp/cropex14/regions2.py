@@ -23,7 +23,7 @@ WHEAT_W10 = (
     "WHEAT_W10"  # triangular wheat field, X & C bands missing for 14cropex1503, L band has issues with 14cropex1114
 )
 BARLEY_B1 = "BARLEY_B1"
-BARLEY_B2 = "BARLEY_B1"
+BARLEY_B2 = "BARLEY_B2"
 RAPESEED_R1 = "RAPESEED_R1"
 RAPESEED_R2 = "RAPESEED_R2"
 SUGAR_BEET_SB0 = "SUGAR_BEET_SB0"  # thin sugar beet stripe next to cucumbers on the big field
