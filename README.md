@@ -80,9 +80,11 @@ Added
 - Data loaders for the CROPEX 2025 campaign
 
 Breaking changes
-- GTC lookup tables loaders have been adjusted to support different types of geocoding lookup tables
-- Related geocoding functionality has been moved and adjusted
-- Some deprecated modules and functions were removed
+- GTC lookup tables have been adjusted to support different coordinates, a new class is provided
+- Related geocoding functionality has been moved and adjusted: now the lookup tables are responsible for geocoding
+- Deprecated modules and functions were removed
+- Region definitions are now a plain dictionary mapping names to polygons in longitude-latitude coordinates
+- GeoCrop (region of a lookup table) was replaced by WindowedGeocoding with similar functionality
 
 ## v2.0.1
 First publicly available version of this package.
