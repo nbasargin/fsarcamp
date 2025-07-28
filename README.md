@@ -36,7 +36,7 @@ Following data loaders are currently supported:
 - `CROPEX14Campaign`: F-SAR data loader (SLC, incidence, lookup tables, etc.)
 - `CROPEX14Biomass`: Point-wise biomass ground measurements collected by the ground teams over specific fields
 - `CROPEX14Moisture`: Point-wise soil moisture ground measurements collected by the ground teams over specific fields
-- `CROPEX14Regions`: Region definitions and geocoding for the relevant fields (as polygons)
+- `CROPEX14Regions`: Region definitions for the relevant fields (as polygons)
 
 ### HTERRA 2022
 
@@ -55,7 +55,7 @@ This package defines following constants:
 Following data loaders are currently supported:
 - `HTERRA22Campaign`: F-SAR data loader (SLC, incidence, lookup tables, etc.)
 - `HTERRA22Moisture`: Point-wise soil moisture ground measurements collected by the ground teams over specific fields
-- `HTERRA22Regions`: Region definitions and geocoding for the relevant fields (as polygons)
+- `HTERRA22Regions`: Region definitions for the relevant fields (as polygons)
 
 ### CROPEX 2025 (AgriROSE-L)
 
@@ -83,7 +83,7 @@ Breaking changes
 - GTC lookup tables have been adjusted to support different coordinates, a new class is provided
 - Related geocoding functionality has been moved and adjusted: now the lookup tables are responsible for geocoding
 - Deprecated modules and functions were removed
-- Region definitions are now a plain dictionary mapping names to polygons in longitude-latitude coordinates
+- Region definitions are now a plain dictionary, mapping names to polygons in longitude-latitude coordinates
 - GeoCrop (region of a lookup table) was replaced by WindowedGeocoding with similar functionality
 - interpolation functions have been changed to work on full LUT / SLC extent instead of regions
 
