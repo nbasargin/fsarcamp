@@ -336,12 +336,6 @@ class CROPEX14Pass:
         pass_folder = self._get_pass_try_folder()
         fname_lut_az = pass_folder / "GTC" / "GTC-LUT" / f"sr2geo_az_{self.pass_name}_{self.band}_t01.rat"
         fname_lut_rg = pass_folder / "GTC" / "GTC-LUT" / f"sr2geo_rg_{self.pass_name}_{self.band}_t01.rat"
-        return fc.Geo2SlantRange(fname_lut_az, fname_lut_rg)
-
-    def load_gtc_sr2geo_lut_v2(self):
-        pass_folder = self._get_pass_try_folder()
-        fname_lut_az = pass_folder / "GTC" / "GTC-LUT" / f"sr2geo_az_{self.pass_name}_{self.band}_t01.rat"
-        fname_lut_rg = pass_folder / "GTC" / "GTC-LUT" / f"sr2geo_rg_{self.pass_name}_{self.band}_t01.rat"        
         # read lookup tables
         f_az = fc.RatFile(fname_lut_az)
         f_rg = fc.RatFile(fname_lut_rg)

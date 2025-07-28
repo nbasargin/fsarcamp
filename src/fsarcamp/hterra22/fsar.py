@@ -153,12 +153,6 @@ class HTERRA22Pass:
         rgi_folder, inf_folder, gtc_folder, try_suffix = self._get_path_parts()
         fname_lut_az = gtc_folder / "GTC-LUT" / f"sr2geo_az_22hterra0104_{self.band}_{try_suffix}.rat"
         fname_lut_rg = gtc_folder / "GTC-LUT" / f"sr2geo_rg_22hterra0104_{self.band}_{try_suffix}.rat"
-        return fc.Geo2SlantRange(fname_lut_az, fname_lut_rg)
-
-    def load_gtc_sr2geo_lut_v2(self):
-        rgi_folder, inf_folder, gtc_folder, try_suffix = self._get_path_parts()
-        fname_lut_az = gtc_folder / "GTC-LUT" / f"sr2geo_az_22hterra0104_{self.band}_{try_suffix}.rat"
-        fname_lut_rg = gtc_folder / "GTC-LUT" / f"sr2geo_rg_22hterra0104_{self.band}_{try_suffix}.rat"
         # read lookup tables
         f_az = fc.RatFile(fname_lut_az)
         f_rg = fc.RatFile(fname_lut_rg)
