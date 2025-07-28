@@ -2,7 +2,6 @@
 from .common import complex_coherence
 from .dataframe import filter_dataframe_longlat_by_geometry, filter_dataframe_longlat_by_geometry_list
 from .fs_utils import get_polinsar_folder
-from .fsar_lut import Geo2SlantRange
 from .fsar_parameters import get_fsar_center_frequency, get_fsar_wavelength
 from .interpolation import interpolate_points_longlat_to_lut, interpolate_points_longlat_to_slc
 from .lookup import nearest_neighbor_lookup
