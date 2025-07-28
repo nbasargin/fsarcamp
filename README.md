@@ -85,6 +85,7 @@ Breaking changes
 - Deprecated modules and functions were removed
 - Region definitions are now a plain dictionary mapping names to polygons in longitude-latitude coordinates
 - GeoCrop (region of a lookup table) was replaced by WindowedGeocoding with similar functionality
+- interpolation functions have been changed to work on full LUT / SLC extent instead of regions
 
 ## v2.0.1
 First publicly available version of this package.
