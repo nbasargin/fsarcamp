@@ -126,7 +126,7 @@ class CROPEX14FieldMap:
         Two new columns are added: "poly_easting_northing_lut" and "poly_range_azimuth".
         """
         fsar_pass = self.cropex14campaign.get_pass(pass_name, band)
-        lut = fsar_pass.load_gtc_sr2geo_lut()
+        lut = fsar_pass.load_gtc_sr2geo_lut() # fsarcamp2-specific
         # translate each polygon to the LUT indices, then to SLC indices
         poly_e_n = field_df["poly_easting_northing"]
         poly_e_n_lut = [self._translate_to_lut_indices(en_poly, lut) for en_poly in poly_e_n.to_list()]
@@ -248,7 +248,7 @@ class CROPEX14FieldMap:
             pass_name, band - F-SAR pass name and band (most passes have the same LUT coordinates but there are exceptions)
             invalid_value - value to fill pixels that do not belong to any field
         """
-        lut = self.cropex14campaign.get_pass(pass_name, band).load_gtc_sr2geo_lut()
+        lut = self.cropex14campaign.get_pass(pass_name, band).load_gtc_sr2geo_lut() # fsarcamp2-specific
         return self._create_field_raster(
             field_df, data_column_name, "poly_easting_northing_lut", lut.lut_az.shape, invalid_value
         )

@@ -220,7 +220,7 @@ class HTERRA22MoistureOld:
 
     def _extend_df_coords(self, df, band):
         fsar_pass = self.hterra22campaign.get_pass("22hterra0104", band)
-        lut = fsar_pass.load_gtc_sr2geo_lut()
+        lut = fsar_pass.load_gtc_sr2geo_lut() # # fsarcamp2-specific
         latitude = df["latitude"].to_numpy()
         longitude = df["longitude"].to_numpy()
         easting, northing = fc.geocode_coords_longlat_to_eastnorth(longitude, latitude, lut.projection)
