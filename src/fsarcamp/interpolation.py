@@ -1,7 +1,7 @@
 import numpy as np
 from matplotlib.tri import Triangulation, LinearTriInterpolator
 import warnings
-import fsarcamp as fc
+from .slantrange2geo import SlantRange2Geo
 
 
 def _great_circle_distance(lon1, lat1, lon2, lat2):
@@ -29,7 +29,7 @@ def interpolate_points_longlat_to_lut(
     longitude,
     latitude,
     point_values,
-    lut: fc.SlantRange2Geo,
+    lut: SlantRange2Geo,
     max_triangle_edge_meters=np.inf,
 ):
     """
@@ -67,7 +67,7 @@ def interpolate_points_longlat_to_slc(
     longitude,
     latitude,
     point_values,
-    lut: fc.SlantRange2Geo,
+    lut: SlantRange2Geo,
     slc_shape,
     max_triangle_edge_meters=np.inf,
 ):
