@@ -1,6 +1,5 @@
 """
 Time period identifiers for the CROPEX 2025 F-SAR campaign.
-PRELIMINARY!
 """
 
 APR_16 = "CR25-APR-16"  # Flight 1
