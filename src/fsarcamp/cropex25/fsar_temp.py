@@ -15,30 +15,9 @@ def _match_master_coreg_names(slc_coreg_name: str):
     return None, None
 
 
-def _insert_into_hierarchy(hierarchy, pass_name, band, master_list):
-    if band not in hierarchy:
-        hierarchy[band] = dict()
-    band_hierarchy = hierarchy[band]
-    if len(master_list) == 0:
-        # this pass is master pass
-        if pass_name not in band_hierarchy:
-            band_hierarchy[pass_name] = []
-    else:
-        for master in master_list:
-            if master not in band_hierarchy:
-                band_hierarchy[master] = []
-            coreg_list = band_hierarchy[master]
-            coreg_list.append(pass_name)
-
-
-def create_pass_hierarchy():
+def create_pass_band_to_master_mapping():
     path = pathlib.Path("/hrdss/HR_Data/Pol-InSAR_InfoRetrieval/01_projects/25CROPEX/")
-    pass_hierarchy = {
-        "X": dict(),
-        "C": dict(),
-        "S": dict(),
-        "L": dict(),
-    }  # band -> master passes -> coregistered passes
+    pass_dict = dict()  # (pass_name, band) -> master_name | None
     # for each flight
     for flight_folder in path.iterdir():
         if not flight_folder.is_dir() or not re.match(r"FL\d\d", flight_folder.name):
@@ -68,17 +47,16 @@ def create_pass_hierarchy():
                                 masters.add(master)
                             if coreg is not None and coreg != pass_name:
                                 print(f"!! warning, coregistered pass name mismatch {pass_name} {coreg}")
-                _insert_into_hierarchy(pass_hierarchy, pass_name, band, list(masters))
+                if (pass_name, band) in pass_dict:
+                    print(f"!! warning, re-definition of {pass_name} {band}")
+                if len(masters) > 1:
+                    print(f"!! warning, multiple masters for {pass_name} {band}")
+                master_name = None if len(masters) == 0 else list(masters)[0]
+                pass_dict[pass_name, band] = master_name
     # sort and print hierarchy
-    print("hierarchy")
-    for band, master_coreg_list in pass_hierarchy.items():
-        pass_hierarchy[band] = dict(sorted(master_coreg_list.items()))
-        for master, coreg_list in pass_hierarchy[band].items():
-            pass_hierarchy[band][master] = tuple(sorted(coreg_list))
-            print(band, master, pass_hierarchy[band][master])
-    print("all together")
-    print(pass_hierarchy)
+    pass_dict = dict(sorted(pass_dict.items()))
+    print(pass_dict)
 
 
 if __name__ == "__main__":
-    create_pass_hierarchy()
+    create_pass_band_to_master_mapping()
