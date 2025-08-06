@@ -1,5 +1,5 @@
 # Re-exporting internal functionality
-from .fsar import CROPEX14Campaign
+from .fsar import CROPEX14Campaign, CROPEX14Pass
 from .moisture import CROPEX14Moisture
 from .biomass import CROPEX14Biomass
 from .regions import CROPEX14Regions
