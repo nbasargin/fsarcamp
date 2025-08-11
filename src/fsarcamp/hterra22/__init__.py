@@ -1,5 +1,5 @@
 # Re-exporting internal functionality
-from .fsar import HTERRA22Campaign
+from .fsar import HTERRA22Campaign, HTERRA22Pass
 from .moisture import HTERRA22Moisture
 from .regions import HTERRA22Regions
 
