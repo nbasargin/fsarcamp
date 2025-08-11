@@ -1189,10 +1189,9 @@ class CROPEX25Pass:
             "11": "11-12-13",
             "12": "11-12-13",
             "13": "11-12-13",
-            # planned triple flights
-            "21": "21-22-23",
-            "22": "21-22-23",
-            "23": "21-22-23",
+            "21": "21-22",
+            "22": "21-22",
+            "23": "23",
         }
         if flight_id in triple_flights:
             return pass_folder / f"INF_{triple_flights[flight_id]}"
