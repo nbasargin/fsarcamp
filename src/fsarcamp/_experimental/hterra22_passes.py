@@ -33,12 +33,9 @@ def create_pass_band_to_master_mapping():
                 try_folder = pass_folder / try_name
                 if not try_folder.exists() or not try_folder.is_dir():
                     continue
-                relevant_folders = []
                 masters = set()
                 pass_name = f"22hterra{flight_number:02}{pass_number:02}"
                 for subfolder in try_folder.iterdir():
-                    if subfolder.is_dir() and re.match("(RGI*)|(INF*)|(GTC*)", subfolder.name):
-                        relevant_folders.append(subfolder.name)
                     inf_sr = subfolder / "INF-SR"
                     if subfolder.is_dir() and re.match("INF*", subfolder.name) and inf_sr.exists():
                         for infsr in inf_sr.iterdir():
