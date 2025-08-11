@@ -1054,6 +1054,10 @@ class CROPEX25Campaign:
         master_name = self._pass_band_to_master.get((pass_name, band), None)
         return CROPEX25Pass(self.campaign_folder, pass_name, band, master_name)
 
+    def get_all_pass_names(self, band):
+        pass_names = [pass_name for pass_name, ps_b in self._pass_band_to_master.keys() if ps_b == band]
+        return sorted(list(set(pass_names)))  # sort and de-duplicate
+
 
 class CROPEX25Pass:
     def __init__(self, campaign_folder, pass_name, band, master_name=None):
