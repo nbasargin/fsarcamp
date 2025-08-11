@@ -5,21 +5,6 @@ Shared utility functions for F-SAR campaigns.
 from xml.etree import ElementTree
 
 
-def get_coreg_to_master_mapping(pass_hierarchy):
-    """
-    Find the master pass for each coregistered pass.
-    Assuming exactly one master pass for each coregistered pass.
-    Inputs:
-        pass_hierarchy: nested dictionary, band -> master passes -> coregistered passes
-    """
-    coreg_to_master = dict()
-    for master_map in pass_hierarchy.values():
-        for master_name, coreg_names in master_map.items():
-            for coreg_name in coreg_names:
-                coreg_to_master[coreg_name] = master_name
-    return coreg_to_master
-
-
 def get_flight_and_pass_ids(pass_name):
     """
     Extract flight and pass IDs (numbers) from pass name.
