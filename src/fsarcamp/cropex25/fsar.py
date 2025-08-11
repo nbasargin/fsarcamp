@@ -8,12 +8,13 @@ class CROPEX25Campaign:
     def __init__(self, campaign_folder):
         """
         Data loader for SAR data for the CROPEX 2025 campaign.
-        The `campaign_folder` path on the DLR-HR server as of November 2024:
+        The `campaign_folder` path on the DLR-HR server as of August 2025:
         "/hrdss/HR_Data/Pol-InSAR_InfoRetrieval/01_projects/25CROPEX/"
         """
         self.name = "CROPEX 2025"
         self.campaign_folder = pathlib.Path(campaign_folder)
         # Mapping for the INF folder: pass_name & band -> master_name
+        # Here, the default master_name is used in case there are more than one master.
         self._pass_band_to_master = {
             ("25cropex0103", "C"): "25cropex0504",
             ("25cropex0103", "L"): "25cropex0504",

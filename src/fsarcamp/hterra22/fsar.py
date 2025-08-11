@@ -12,10 +12,12 @@ class HTERRA22Campaign:
         """
         Data loader for SAR data for the HTERRA 2022 campaign.
         The `campaign_folder` path on the DLR-HR server as of August 2025:
-        "/hrdss/HR_Data/Pol-InSAR_InfoRetrieval/01_projects/01_projects/22HTERRA"
+        "/hrdss/HR_Data/Pol-InSAR_InfoRetrieval/01_projects/22HTERRA"
         """
         self.name = "HTERRA 2022"
         self.campaign_folder = pathlib.Path(campaign_folder)
+        # Mapping for the INF folder: pass_name & band -> master_name
+        # Here, the default master_name is used in case there are more than one master.
         self._pass_band_to_master = {
             ("22hterra0102", "C"): "22hterra0104",
             ("22hterra0102", "L"): "22hterra0104",
