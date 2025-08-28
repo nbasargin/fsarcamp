@@ -63,6 +63,11 @@ This repository includes third party code obtained from `https://github.com/birg
 Third party code is located in the `fsarcamp/src/fsarcamp/ste_io` folder and is licensed under the MPL-2.0 license.
 
 # Changelog
+
+## v3.0.1
+Fixes
+- fix WindowedGeocoding valid min index computation for LUTs with negative index values
+
 ## v3.0.0
 Added
 - Data loaders for the CROPEX 2025 campaign
