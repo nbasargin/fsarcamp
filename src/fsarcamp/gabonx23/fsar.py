@@ -310,7 +310,11 @@ class GABONX23Campaign:
         return GABONX23Pass(self.campaign_folder, pass_name, band, master_name)
 
     def get_all_pass_names(self, band):
-        pass_names = [pass_name for pass_name, ps_b in self._pass_band_to_master.keys() if ps_b == band]
+        pass_names = [
+            pass_name
+            for pass_name, ps_b in self._pass_band_to_master.keys()
+            if ps_b == band
+        ]
         return sorted(list(set(pass_names)))  # sort and de-duplicate
 
 
@@ -327,7 +331,11 @@ class GABONX23Pass:
         """
         Load SLC in specified polarization ("hh", "hv", "vh", "vv") from the RGI folder.
         """
-        return fc.mrrat(self._get_rgi_folder() / "RGI-SR" / f"slc_{self.pass_name}_{self.band}{pol}_t{self.band}01.rat")
+        return fc.mrrat(
+            self._get_rgi_folder()
+            / "RGI-SR"
+            / f"slc_{self.pass_name}_{self.band}{pol}_t{self.band}01.rat"
+        )
 
     def load_rgi_incidence(self, pol=None):
         """
@@ -335,7 +343,9 @@ class GABONX23Pass:
         Polarization is ignored for the GABONX 2023 campaign.
         """
         return fc.mrrat(
-            self._get_rgi_folder() / "RGI-SR" / f"incidence_{self.pass_name}_{self.band}_t{self.band}01.rat"
+            self._get_rgi_folder()
+            / "RGI-SR"
+            / f"incidence_{self.pass_name}_{self.band}_t{self.band}01.rat"
         )
 
     def load_rgi_params(self, pol="hh"):
@@ -343,7 +353,76 @@ class GABONX23Pass:
         Load radar parameters from the RGI folder. Default polarization is "hh".
         """
         return campaign_utils.parse_xml_parameters(
-            self._get_rgi_folder() / "RGI-RDP" / f"pp_{self.pass_name}_{self.band}{pol}_t{self.band}01.xml"
+            self._get_rgi_folder()
+            / "RGI-RDP"
+            / f"pp_{self.pass_name}_{self.band}{pol}_t{self.band}01.xml"
+        )
+
+    # INF folder
+
+    def load_inf_slc(self, pol):
+        """
+        Load coregistered SLC in specified polarization ("hh", "hv", "vh", "vv") from the INF folder.
+        """
+        return fc.mrrat(
+            self._get_inf_folder()
+            / "INF-SR"
+            / f"slc_coreg_{self.master_name}_{self.pass_name}_{self.band}{pol}_t{self.band}01.rat"
+        )
+
+    def load_inf_pha_dem(self, pol=None):
+        """
+        Load interferometric phase correction derived from track and terrain geometry.
+        The residual can be used to correct the phase of the coregistered SLCs: coreg_slc * np.exp(1j * phase)
+        This is equivalent of subtracting the phase from the interferogram.
+        Polarization is ignored for the GABONX 23 campaign.
+        """
+        return fc.mrrat(
+            self._get_inf_folder()
+            / "INF-SR"
+            / f"pha_dem_{self.master_name}_{self.pass_name}_{self.band}_t{self.band}01.rat"
+        )
+
+    def load_inf_pha_fe(self, pol=None):
+        """
+        Load interferometric flat-Earth phase.
+        For the GABONX 23 campaign, this phase is included into pha_dem and pha_fe is 0.
+        Polarization is ignored for the GABONX 23 campaign.
+        """
+        return fc.mrrat(
+            self._get_inf_folder()
+            / "INF-SR"
+            / f"pha_fe_{self.master_name}_{self.pass_name}_{self.band}_t{self.band}01.rat"
+        )
+
+    def load_inf_kz(self, pol):
+        """
+        Load interferometric kz.
+        """
+        return fc.mrrat(
+            self._get_inf_folder()
+            / "INF-SR"
+            / f"kz_{self.master_name}_{self.pass_name}_{self.band}{pol}_t{self.band}01.rat"
+        )
+
+    def load_inf_params(self, pol="hh"):
+        """
+        Load radar parameters from the INF folder. Default polarization is "hh".
+        """
+        return campaign_utils.parse_xml_parameters(
+            self._get_inf_folder()
+            / "INF-RDP"
+            / f"pp_{self.pass_name}_{self.band}{pol}_t{self.band}01.xml"
+        )
+
+    def load_inf_insar_params(self, pol="hh"):
+        """
+        Load insar radar parameters from the INF folder. Default polarization is "hh".
+        """
+        return campaign_utils.parse_xml_parameters(
+            self._get_inf_folder()
+            / "INF-RDP"
+            / f"ppinsar_{self.master_name}_{self.pass_name}_{self.band}{pol}_t{self.band}01.xml"
         )
 
     # Helpers
@@ -351,3 +430,7 @@ class GABONX23Pass:
     def _get_rgi_folder(self):
         flight_id, pass_id = campaign_utils.get_flight_and_pass_ids(self.pass_name)
         return self.campaign_folder / f"FL{flight_id}/PS{pass_id}/T{self.band}01/RGI"
+
+    def _get_inf_folder(self):
+        flight_id, pass_id = campaign_utils.get_flight_and_pass_ids(self.pass_name)
+        return self.campaign_folder / f"FL{flight_id}/PS{pass_id}/T{self.band}01/INF"
