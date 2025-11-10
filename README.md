@@ -64,6 +64,10 @@ Third party code is located in the `fsarcamp/src/fsarcamp/ste_io` folder and is 
 
 # Changelog
 
+## v3.1.0
+Added
+- Added support for the T10 version (D-InSAR) for CROPEX 2025
+
 ## v3.0.1
 Fixes
 - fix WindowedGeocoding valid min index computation for LUTs with negative index values
