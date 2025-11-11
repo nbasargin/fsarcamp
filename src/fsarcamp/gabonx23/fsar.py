@@ -1,4 +1,8 @@
+import numpy as np
 import pathlib
+import rasterio
+import rasterio.crs
+import rasterio.transform
 import fsarcamp as fc
 from fsarcamp import campaign_utils
 
@@ -310,11 +314,7 @@ class GABONX23Campaign:
         return GABONX23Pass(self.campaign_folder, pass_name, band, master_name)
 
     def get_all_pass_names(self, band):
-        pass_names = [
-            pass_name
-            for pass_name, ps_b in self._pass_band_to_master.keys()
-            if ps_b == band
-        ]
+        pass_names = [pass_name for pass_name, ps_b in self._pass_band_to_master.keys() if ps_b == band]
         return sorted(list(set(pass_names)))  # sort and de-duplicate
 
 
@@ -331,11 +331,7 @@ class GABONX23Pass:
         """
         Load SLC in specified polarization ("hh", "hv", "vh", "vv") from the RGI folder.
         """
-        return fc.mrrat(
-            self._get_rgi_folder()
-            / "RGI-SR"
-            / f"slc_{self.pass_name}_{self.band}{pol}_t{self.band}01.rat"
-        )
+        return fc.mrrat(self._get_rgi_folder() / "RGI-SR" / f"slc_{self.pass_name}_{self.band}{pol}_t{self.band}01.rat")
 
     def load_rgi_incidence(self, pol=None):
         """
@@ -343,9 +339,7 @@ class GABONX23Pass:
         Polarization is ignored for the GABONX 2023 campaign.
         """
         return fc.mrrat(
-            self._get_rgi_folder()
-            / "RGI-SR"
-            / f"incidence_{self.pass_name}_{self.band}_t{self.band}01.rat"
+            self._get_rgi_folder() / "RGI-SR" / f"incidence_{self.pass_name}_{self.band}_t{self.band}01.rat"
         )
 
     def load_rgi_params(self, pol="hh"):
@@ -353,9 +347,7 @@ class GABONX23Pass:
         Load radar parameters from the RGI folder. Default polarization is "hh".
         """
         return campaign_utils.parse_xml_parameters(
-            self._get_rgi_folder()
-            / "RGI-RDP"
-            / f"pp_{self.pass_name}_{self.band}{pol}_t{self.band}01.xml"
+            self._get_rgi_folder() / "RGI-RDP" / f"pp_{self.pass_name}_{self.band}{pol}_t{self.band}01.xml"
         )
 
     # INF folder
@@ -410,9 +402,7 @@ class GABONX23Pass:
         Load radar parameters from the INF folder. Default polarization is "hh".
         """
         return campaign_utils.parse_xml_parameters(
-            self._get_inf_folder()
-            / "INF-RDP"
-            / f"pp_{self.pass_name}_{self.band}{pol}_t{self.band}01.xml"
+            self._get_inf_folder() / "INF-RDP" / f"pp_{self.pass_name}_{self.band}{pol}_t{self.band}01.xml"
         )
 
     def load_inf_insar_params(self, pol="hh"):
@@ -425,6 +415,38 @@ class GABONX23Pass:
             / f"ppinsar_{self.master_name}_{self.pass_name}_{self.band}{pol}_t{self.band}01.xml"
         )
 
+    # GTC folder
+
+    def load_gtc_sr2geo_lut(self):
+        lut_az_path = self._get_gtc_folder() / "GTC-LUT" / f"sr2geo_az_{self.pass_name}_{self.band}_t{self.band}01.rat"
+        lut_rg_path = self._get_gtc_folder() / "GTC-LUT" / f"sr2geo_rg_{self.pass_name}_{self.band}_t{self.band}01.rat"
+        # read lookup tables
+        f_az = fc.RatFile(lut_az_path)
+        f_rg = fc.RatFile(lut_rg_path)
+        # in the RAT file northing (first axis) is decreasing, and easting (second axis) is increasing
+        lut_az = f_az.mread()  # reading with memory map: fast and read-only
+        lut_rg = f_rg.mread()
+        assert lut_az.shape == lut_rg.shape
+        # read projection
+        header_geo = f_az.Header.Geo  # assume lut az and lut rg headers are equal
+        hemisphere_key = "south" if header_geo.hemisphere == 2 else "north"
+        proj_params = {
+            "proj": "utm",
+            "zone": np.abs(header_geo.zone),  # negative zone indicates southern hemisphere (defined separaterly)
+            "ellps": "WGS84",  # assume WGS84 ellipsoid
+            hemisphere_key: True,
+        }
+        crs = rasterio.crs.CRS.from_dict(proj_params)
+        # get affine transform
+        ps_north = header_geo.ps_north
+        ps_east = header_geo.ps_east
+        min_north = header_geo.min_north
+        min_east = header_geo.min_east
+        max_north = min_north + ps_north * (lut_az.shape[0] - 1)
+        transform = rasterio.transform.from_origin(min_east, max_north, ps_east, ps_north)
+        lut = fc.SlantRange2Geo(lut_az=lut_az, lut_rg=lut_rg, crs=crs, transform=transform)
+        return lut
+
     # Helpers
 
     def _get_rgi_folder(self):
@@ -434,3 +456,7 @@ class GABONX23Pass:
     def _get_inf_folder(self):
         flight_id, pass_id = campaign_utils.get_flight_and_pass_ids(self.pass_name)
         return self.campaign_folder / f"FL{flight_id}/PS{pass_id}/T{self.band}01/INF"
+
+    def _get_gtc_folder(self):
+        flight_id, pass_id = campaign_utils.get_flight_and_pass_ids(self.pass_name)
+        return self.campaign_folder / f"FL{flight_id}/PS{pass_id}/T{self.band}01/GTC"
