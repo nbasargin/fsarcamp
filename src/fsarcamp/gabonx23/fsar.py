@@ -447,6 +447,44 @@ class GABONX23Pass:
         lut = fc.SlantRange2Geo(lut_az=lut_az, lut_rg=lut_rg, crs=crs, transform=transform)
         return lut
 
+    def _read_sr2latlon_header(self, path):
+        # Load params from header file
+        f = open(path, "r")
+        param_dict = {}
+        parse_variables = set(["lon_min", "lon_max", "lat_min", "lat_max"])
+        for line in f:
+            var_val = line.split("=")
+            if len(var_val) != 2:
+                continue
+            variable, value = var_val
+            variable = variable.strip()
+            if variable in parse_variables:
+                param_dict[variable] = float(value)
+        return param_dict
+
+    def load_gtc_sr2latlon_lut(self):
+        gtc_lut = self._get_gtc_folder() / "GTC-LUT"
+        lut_az_path = gtc_lut / f"sr2latlon_az_{self.pass_name}_{self.band}_t{self.band}01.rat"
+        lut_rg_path = gtc_lut / f"sr2latlon_rg_{self.pass_name}_{self.band}_t{self.band}01.rat"
+        hdr_az_path = gtc_lut / f"sr2latlon_az_{self.pass_name}_{self.band}_t{self.band}01.rat.hdr"
+        # read lookup tables
+        f_az = fc.RatFile(lut_az_path)
+        f_rg = fc.RatFile(lut_rg_path)
+        header = self._read_sr2latlon_header(hdr_az_path)
+        # reading with memory map: fast and read-only
+        lut_az = np.flipud(f_az.mread())  # flip image updown, to be consistent with sr2geo
+        lut_rg = np.flipud(f_rg.mread())
+        assert lut_az.shape == lut_rg.shape
+        crs = rasterio.crs.CRS.from_epsg(4326)
+        lon_min = header["lon_min"]
+        lon_max = header["lon_max"]
+        lat_min = header["lat_min"]
+        lat_max = header["lat_max"]
+        rows, cols = lut_az.shape
+        transform = rasterio.transform.from_bounds(lon_min, lat_min, lon_max, lat_max, cols, rows)
+        lut = fc.SlantRange2Geo(lut_az=lut_az, lut_rg=lut_rg, crs=crs, transform=transform)
+        return lut
+
     # Helpers
 
     def _get_rgi_folder(self):
