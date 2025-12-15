@@ -26,8 +26,10 @@ class WindowedGeocoding:
         """
         return img[self.min_az_idx : self.max_az_idx, self.min_rg_idx : self.max_rg_idx]
 
-    def geocode_windowed_image_azrg_to_crs(self, cropped_img):
+    def geocode_windowed_image_azrg_to_crs(self, cropped_img, inv_value=np.nan):
         """
         Geocode previously cropped image window to geographical coordinates of the lookup table.
         """
-        return fc.nearest_neighbor_lookup(cropped_img, self.window_lut_az, self.window_lut_rg)
+        return fc.nearest_neighbor_lookup(
+            cropped_img, self.window_lut_az, self.window_lut_rg, inv_value=inv_value
+        )

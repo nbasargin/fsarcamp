@@ -64,6 +64,10 @@ Third party code is located in the `fsarcamp/src/fsarcamp/ste_io` folder and is 
 
 # Changelog
 
+## v3.1.1
+Added
+- Added `inv_value` to WindowedGeocoding
+
 ## v3.1.0
 Added
 - Added support for the T10 version (D-InSAR) for CROPEX 2025
