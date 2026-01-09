@@ -1194,7 +1194,11 @@ class CROPEX25Campaign:
             return master_name, inf_folder_name
 
         if try_name == "T10":
-            inf_folder_name = inf_geometry
+            if pass_name == "25cropex1514":
+                # flight 15 does not have track 20 -> use track 33 with different master instead
+                return "25cropex0514", "INF_33"
+            else:
+                inf_folder_name = inf_geometry
             return master_name, inf_folder_name
 
         raise ValueError(f"Unknown combination: {pass_name} {band} {try_name}")
