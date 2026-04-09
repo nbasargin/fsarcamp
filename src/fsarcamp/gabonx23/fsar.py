@@ -462,7 +462,7 @@ class GABONX23Pass:
                 param_dict[variable] = float(value)
         return param_dict
 
-    def load_gtc_sr2latlon_lut(self, flipud=True):
+    def load_gtc_sr2latlon_lut(self):
         gtc_lut = self._get_gtc_folder() / "GTC-LUT"
         lut_az_path = gtc_lut / f"sr2latlon_az_{self.pass_name}_{self.band}_t{self.band}01.rat"
         lut_rg_path = gtc_lut / f"sr2latlon_rg_{self.pass_name}_{self.band}_t{self.band}01.rat"
@@ -474,10 +474,9 @@ class GABONX23Pass:
         # reading with memory map: fast and read-only
         lut_az = f_az.mread()
         lut_rg = f_rg.mread()
-        if flipud:
-            # flip image updown, to be consistent with sr2geo
-            lut_az = np.flipud(lut_az)
-            lut_rg = np.flipud(lut_rg)
+        # flip image updown, to be consistent with sr2geo
+        lut_az = np.flipud(lut_az)
+        lut_rg = np.flipud(lut_rg)
         assert lut_az.shape == lut_rg.shape
         crs = rasterio.crs.CRS.from_epsg(4326)
         lon_min = header["lon_min"]
