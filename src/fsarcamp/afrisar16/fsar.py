@@ -295,11 +295,19 @@ class AFRISR16Pass:
     def load_rgi_incidence(self, pol=None):
         """
         Load incidence angle from the RGI folder.
-        Polarization is ignored for the GABONX 2023 campaign.
+        Polarization is ignored for the AFRISR 2016 campaign.
         """
         try_name = self._get_try_name()
         return fc.mrrat(self._get_rgi_folder() / "RGI-SR" / f"incidence_{self.pass_name}_{self.band}_{try_name}.rat")
 
+    def load_rgi_mask(self, pol=None):
+        """
+        Load the mask from the RGI folder.
+        Polarization is ignored for the AFRISR 2016 campaign.
+        """
+        try_name = self._get_try_name()
+        return fc.mrrat(self._get_rgi_folder() / "RGI-SR" / f"mask_{self.pass_name}_{self.band}_{try_name}.rat")
+    
     def load_rgi_params(self, pol="hh"):
         """
         Load radar parameters from the RGI folder. Default polarization is "hh".
@@ -327,7 +335,7 @@ class AFRISR16Pass:
         Load interferometric phase correction derived from track and terrain geometry.
         The residual can be used to correct the phase of the coregistered SLCs: coreg_slc * np.exp(1j * phase)
         This is equivalent of subtracting the phase from the interferogram.
-        Polarization is ignored for the AFRISR 16 campaign.
+        Polarization is ignored for the AFRISR 2016 campaign.
         """
         try_name = self._get_try_name()
         return fc.mrrat(
@@ -339,7 +347,7 @@ class AFRISR16Pass:
     def load_inf_pha_fe(self, pol=None):
         """
         Load interferometric flat-Earth phase.
-        For the AFRISR 16 campaign, this phase is included into pha_dem and pha_fe is 0.
+        For the AFRISR 2016 campaign, this phase is included into pha_dem and pha_fe is 0.
         This method exists only for compatibility with older campaigns and returns a hard-coded 0.
         """
         return 0
@@ -354,6 +362,8 @@ class AFRISR16Pass:
             / "INF-SR"
             / f"kz_{self.master_name}_{self.pass_name}_{self.band}{pol}_{try_name}.rat"
         )
+    
+    # No INF masks available for the AFRISR 2016 campaign
 
     def load_inf_params(self, pol="hh"):
         """

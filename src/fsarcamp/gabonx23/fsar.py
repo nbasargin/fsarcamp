@@ -342,6 +342,15 @@ class GABONX23Pass:
             self._get_rgi_folder() / "RGI-SR" / f"incidence_{self.pass_name}_{self.band}_t{self.band}01.rat"
         )
 
+    def load_rgi_mask(self, pol=None):
+        """
+        Load the mask from the RGI folder.
+        Polarization is ignored for the GABONX 2023 campaign.
+        """
+        return fc.mrrat(
+            self._get_rgi_folder() / "RGI-SR" / f"mask_{self.pass_name}_{self.band}_t{self.band}01.rat"
+        )
+
     def load_rgi_params(self, pol="hh"):
         """
         Load radar parameters from the RGI folder. Default polarization is "hh".
@@ -395,6 +404,17 @@ class GABONX23Pass:
             self._get_inf_folder()
             / "INF-SR"
             / f"kz_{self.master_name}_{self.pass_name}_{self.band}{pol}_t{self.band}01.rat"
+        )
+    
+    def load_inf_mask(self, pol=None):
+        """
+        Load the mask from the RGI folder.
+        Polarization is ignored for the GABONX 2023 campaign.
+        """
+        return fc.mrrat(
+            self._get_inf_folder()
+            / "INF-SR"
+            / f"mask_{self.master_name}_{self.pass_name}_{self.band}_t{self.band}01.rat"
         )
 
     def load_inf_params(self, pol="hh"):
