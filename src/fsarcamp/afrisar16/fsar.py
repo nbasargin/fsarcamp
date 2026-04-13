@@ -389,12 +389,21 @@ class AFRISR16Pass:
 
     def load_gtc_sr2geo_lut(self):
         try_name = self._get_try_name()
+        # default path: the nested GTC folder (newer version of LUTs)
         lut_az_path = (
             self._get_nested_gtc_folder() / "GTC-LUT" / f"sr2geo_az_{self.pass_name}_{self.band}_{try_name}.rat"
         )
         lut_rg_path = (
             self._get_nested_gtc_folder() / "GTC-LUT" / f"sr2geo_rg_{self.pass_name}_{self.band}_{try_name}.rat"
         )
+        # fallback: non-nested folder (older version of the LUTs)
+        if not lut_az_path.exists() or not lut_rg_path.exists():
+            lut_az_path = (
+                self._get_old_gtc_folder() / "GTC-LUT" / f"sr2geo_az_{self.pass_name}_{self.band}_{try_name}.rat"
+            )
+            lut_rg_path = (
+                self._get_old_gtc_folder() / "GTC-LUT" / f"sr2geo_rg_{self.pass_name}_{self.band}_{try_name}.rat"
+            )
         # read lookup tables
         f_az = fc.RatFile(lut_az_path)
         f_rg = fc.RatFile(lut_rg_path)
@@ -479,7 +488,7 @@ class AFRISR16Pass:
         try_folder = self._get_try_name().upper()
         return self.campaign_folder / f"FL{flight_id}/PS{pass_id}/{try_folder}/INF"
 
-    def _get_gtc_folder(self):
+    def _get_old_gtc_folder(self):
         flight_id, pass_id = campaign_utils.get_flight_and_pass_ids(self.pass_name)
         try_folder = self._get_try_name().upper()
         return self.campaign_folder / f"FL{flight_id}/PS{pass_id}/{try_folder}/GTC"
