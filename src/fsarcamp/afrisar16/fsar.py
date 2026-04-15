@@ -307,7 +307,7 @@ class AFRISR16Pass:
         """
         try_name = self._get_try_name()
         return fc.mrrat(self._get_rgi_folder() / "RGI-SR" / f"mask_{self.pass_name}_{self.band}_{try_name}.rat")
-    
+
     def load_rgi_params(self, pol="hh"):
         """
         Load radar parameters from the RGI folder. Default polarization is "hh".
@@ -362,7 +362,7 @@ class AFRISR16Pass:
             / "INF-SR"
             / f"kz_{self.master_name}_{self.pass_name}_{self.band}{pol}_{try_name}.rat"
         )
-    
+
     # No INF masks available for the AFRISR 2016 campaign
 
     def load_inf_params(self, pol="hh"):
@@ -389,21 +389,15 @@ class AFRISR16Pass:
 
     def load_gtc_sr2geo_lut(self):
         try_name = self._get_try_name()
+        lut_az_name = f"sr2geo_az_{self.pass_name}_{self.band}_{try_name}.rat"
+        lut_rg_name = f"sr2geo_rg_{self.pass_name}_{self.band}_{try_name}.rat"
         # default path: the nested GTC folder (newer version of LUTs)
-        lut_az_path = (
-            self._get_nested_gtc_folder() / "GTC-LUT" / f"sr2geo_az_{self.pass_name}_{self.band}_{try_name}.rat"
-        )
-        lut_rg_path = (
-            self._get_nested_gtc_folder() / "GTC-LUT" / f"sr2geo_rg_{self.pass_name}_{self.band}_{try_name}.rat"
-        )
+        lut_az_path = self._get_nested_gtc_folder() / "GTC-LUT" / lut_az_name
+        lut_rg_path = self._get_nested_gtc_folder() / "GTC-LUT" / lut_rg_name
         # fallback: non-nested folder (older version of the LUTs)
         if not lut_az_path.exists() or not lut_rg_path.exists():
-            lut_az_path = (
-                self._get_old_gtc_folder() / "GTC-LUT" / f"sr2geo_az_{self.pass_name}_{self.band}_{try_name}.rat"
-            )
-            lut_rg_path = (
-                self._get_old_gtc_folder() / "GTC-LUT" / f"sr2geo_rg_{self.pass_name}_{self.band}_{try_name}.rat"
-            )
+            lut_az_path = self._get_old_gtc_folder() / "GTC-LUT" / lut_az_name
+            lut_rg_path = self._get_old_gtc_folder() / "GTC-LUT" / lut_rg_name
         # read lookup tables
         f_az = fc.RatFile(lut_az_path)
         f_rg = fc.RatFile(lut_rg_path)
@@ -448,10 +442,18 @@ class AFRISR16Pass:
 
     def load_gtc_sr2latlon_lut(self):
         try_name = self._get_try_name()
-        gtc_lut = self._get_nested_gtc_folder() / "GTC-LUT"
-        lut_az_path = gtc_lut / f"sr2latlon_az_{self.pass_name}_{self.band}_{try_name}.rat"
-        lut_rg_path = gtc_lut / f"sr2latlon_rg_{self.pass_name}_{self.band}_{try_name}.rat"
-        hdr_az_path = gtc_lut / f"sr2latlon_az_{self.pass_name}_{self.band}_{try_name}.rat.hdr"
+        lut_az_name = f"sr2latlon_az_{self.pass_name}_{self.band}_{try_name}.rat"
+        lut_rg_name = f"sr2latlon_rg_{self.pass_name}_{self.band}_{try_name}.rat"
+        hdr_az_name = f"sr2latlon_az_{self.pass_name}_{self.band}_{try_name}.rat.hdr"
+        # default path: the nested GTC folder (newer version of LUTs)
+        lut_az_path = self._get_nested_gtc_folder() / "GTC-LUT" / lut_az_name
+        lut_rg_path = self._get_nested_gtc_folder() / "GTC-LUT" / lut_rg_name
+        hdr_az_path = self._get_nested_gtc_folder() / "GTC-LUT" / hdr_az_name
+        # fallback: non-nested folder (older version of the LUTs)
+        if not lut_az_path.exists() or not lut_rg_path.exists() or not hdr_az_path.exists():
+            lut_az_path = self._get_old_gtc_folder() / "GTC-LUT" / lut_az_name
+            lut_rg_path = self._get_old_gtc_folder() / "GTC-LUT" / lut_rg_name
+            hdr_az_path = self._get_old_gtc_folder() / "GTC-LUT" / hdr_az_name
         # read lookup tables
         f_az = fc.RatFile(lut_az_path)
         f_rg = fc.RatFile(lut_rg_path)
