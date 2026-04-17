@@ -317,6 +317,15 @@ class AFRISR16Pass:
             self._get_rgi_folder() / "RGI-RDP" / f"pp_{self.pass_name}_{self.band}{pol}_{try_name}.xml"
         )
 
+    def load_rgi_slantdem(self):
+        """
+        Load slant DEM from the RGI folder.
+        """
+        try_name = self._get_try_name()
+        return fc.mrrat(
+            self._get_rgi_folder() / "RGI-AUX" / f"slantdem_full_{self.pass_name}_{self.band}_{try_name}.rat"
+        )
+
     # INF folder
 
     def load_inf_slc(self, pol):

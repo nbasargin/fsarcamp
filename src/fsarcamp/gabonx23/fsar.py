@@ -359,6 +359,14 @@ class GABONX23Pass:
             self._get_rgi_folder() / "RGI-RDP" / f"pp_{self.pass_name}_{self.band}{pol}_t{self.band}01.xml"
         )
 
+    def load_rgi_slantdem(self):
+        """
+        Load slant DEM from the RGI folder.
+        """
+        return fc.mrrat(
+            self._get_rgi_folder() / "RGI-AUX" / f"slantdem_full_{self.pass_name}_{self.band}_t{self.band}01.rat"
+        )
+
     # INF folder
 
     def load_inf_slc(self, pol):
