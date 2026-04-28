@@ -326,6 +326,13 @@ class AFRISR16Pass:
             self._get_rgi_folder() / "RGI-AUX" / f"slantdem_full_{self.pass_name}_{self.band}_{try_name}.rat"
         )
 
+    def load_rgi_offnadir(self):
+        """
+        Load offnadir from the RGI folder.
+        """
+        try_name = self._get_try_name()
+        return fc.mrrat(self._get_rgi_folder() / "RGI-AUX" / f"offnadir_{self.pass_name}_{self.band}_{try_name}.rat")
+
     # INF folder
 
     def load_inf_slc(self, pol):
