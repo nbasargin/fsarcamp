@@ -137,11 +137,19 @@ class HTERRA22Pass:
     def load_rgi_incidence(self, pol=None):
         """
         Load incidence angle from the RGI folder.
-        Polarization is ignored for the HTERRA 22 campaign.
+        Polarization is ignored for the HTERRA 2022 campaign.
         """
         rgi_folder, inf_folder, gtc_folder, try_suffix = self._get_path_parts()
         return fc.mrrat(rgi_folder / "RGI-SR" / f"incidence_{self.pass_name}_{self.band}_{try_suffix}.rat")
 
+    def load_rgi_mask(self, pol=None):
+        """
+        Load the mask from the RGI folder.
+        Polarization is ignored for the HTERRA 2022 campaign.
+        """
+        rgi_folder, inf_folder, gtc_folder, try_suffix = self._get_path_parts()
+        return fc.mrrat(rgi_folder / "RGI-SR" / f"mask_{self.pass_name}_{self.band}_{try_suffix}.rat")
+    
     def load_rgi_params(self, pol="hh"):
         """
         Load radar parameters from the RGI folder. Default polarization is "hh".

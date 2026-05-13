@@ -287,11 +287,19 @@ class CROPEX14Pass:
     def load_rgi_incidence(self, pol=None):
         """
         Load incidence angle from the RGI folder.
-        Polarization is ignored for the CROPEX 14 campaign.
+        Polarization is ignored for the CROPEX 2014 campaign.
         """
         pass_folder = self._get_pass_try_folder()
         return fc.mrrat(pass_folder / "RGI" / "RGI-SR" / f"incidence_{self.pass_name}_{self.band}_t01.rat")
 
+    def load_rgi_mask(self, pol=None):
+        """
+        Load the mask from the RGI folder.
+        Polarization is ignored for the CROPEX 2014 campaign.
+        """
+        pass_folder = self._get_pass_try_folder()
+        return fc.mrrat(pass_folder / "RGI" / "RGI-SR" / f"mask_{self.pass_name}_{self.band}_t01.rat")
+    
     def load_rgi_params(self, pol="hh"):
         """
         Load radar parameters from the RGI folder. Default polarization is "hh".
