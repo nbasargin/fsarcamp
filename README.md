@@ -1,6 +1,7 @@
 # F-SAR campaigns package
 The main purpose of this package is to provide a convenient way to load the data of different F-SAR campaigns, including F-SAR radar data (e.g. SLC, incidence), geocoding lookup tables (LUT), and campaign ground measurements (if available).
 
+
 ## Installation
 `pip install fsarcamp`
 
@@ -9,6 +10,7 @@ Alternatively, you can install the package in editable mode:
 - Then, activate the python environment (e.g. conda or venv) where the package should be installed.
 - Run `pip install -e .` in the root folder of this package (where `pyproject.toml` is located).
 
+
 ## Campaign components
 Each F-SAR campaign is represented by a python class e.g. `CROPEX14Campaign` that contains data about all available campaign flights and passes.
 Using this class you can obtain instances of F-SAR passes e.g. `CROPEX14Pass` that provide loaders for the radar data (e.g. SLC, incidence).
@@ -16,10 +18,12 @@ Using this class you can obtain instances of F-SAR passes e.g. `CROPEX14Pass` th
 In addition, each campaign can provide loaders for the ground measurements.
 The data varies from campaign to campaign and may include useful constants (e.g. specific dates), region boundaries (e.g. fields), point measurements, etc.
 
+
 ## Supported campaigns
 F-SAR campaigns are usually experimental and the folder structure or file naming slightly change over the years.
 This package is not intended to be a universal data loader and only supports specific F-SAR campaigns.
 See the list of campaigns and the available data below.
+
 
 ### CROPEX 2014
 Campaign focusing on agricultural crops with many flights over 10 weeks.
@@ -33,6 +37,17 @@ Following data loaders and definitions are available:
 - `CROPEX14Biomass`: Point-wise biomass ground measurements collected by the ground teams over specific fields
 - `CROPEX14Moisture`: Point-wise soil moisture ground measurements collected by the ground teams over specific fields
 - `CROPEX14Regions`: Region definitions for the relevant fields (as polygons)
+
+
+### AFRISR 2016 (AfriSAR-1)
+
+Campaign focusing on topical forest in Gabon.
+L- and P-band are available, most flights have multiple baselines and support tomography.
+There are several sites covered by the campaign, including Lope, Mabounie, Pongara, and others.
+
+Following data loaders and definitions are available:
+- `AFRISR16Campaign`: F-SAR data loader (SLC, incidence, lookup tables, etc.)
+
 
 ### HTERRA 2022
 Campaign focusing on soil moisture in agricultural areas.
@@ -48,6 +63,21 @@ Following data loaders and definitions are available:
 - `HTERRA22Moisture`: Point-wise soil moisture ground measurements collected by the ground teams over specific fields
 - `HTERRA22Regions`: Region definitions for the relevant fields (as polygons)
 
+
+### GABONX 2023 (AfriSAR-2)
+Campaign focusing on topical forest in Gabon and repeating many acquisitions of the previous AFRISR 2016 campaign.
+L- and P-band are available, most flights have multiple baselines and support tomography.
+There are several sites covered by the campaign, including Lope, Mabounie, Pongara, and others.
+
+Some of the interferometric products are co-registered to the previous AFRISR 2016.
+Therefore, geocoding can require loading the LUTs from AFRISR 2016.
+
+The campaign was accompanied by lidar (LVIS) acquisitions, but the lidar loaders are not included in this package.
+
+Following data loaders and definitions are available:
+- `GABONX23Campaign`: F-SAR data loader (SLC, incidence, lookup tables, etc.)
+
+
 ### CROPEX 2025 (AgriROSE-L)
 Campaign focusing on agricultural crops and soil moisture with regular flights from April to July 2025.
 X-, C-, S-, and L-band are available, most dates have several baselines allowing tomography.
@@ -58,11 +88,18 @@ Following data loaders and definitions are available:
 - `CROPEX25Moisture`: Point-wise soil moisture ground measurements collected by the ground teams over specific fields
 - `CROPEX25Regions`: Region definitions for the relevant fields (as polygons)
 
+
 # Notes
 This repository includes third party code obtained from `https://github.com/birgander2/PyRAT` to read RAT files.
 Third party code is located in the `fsarcamp/src/fsarcamp/ste_io` folder and is licensed under the MPL-2.0 license.
 
+
 # Changelog
+
+## v3.2.0
+Added
+- Added basic support for the AFRISR 2016 and GABONX 2023 F-SAR campaigns
+- Added RGI mask loaders for CROPEX 2014, HTERRA 2022, and CROPEX 2025
 
 ## v3.1.1
 Added
